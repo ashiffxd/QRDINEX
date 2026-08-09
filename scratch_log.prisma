@@ -1,0 +1,41 @@
+// =============================================================================
+// MODEL 12 — OrderStatusLog
+// Tracks the full lifecycle and audit trail of an order's status changes.
+// Created automatically inside the Prisma transaction for every status update.
+// IMMUTABLE — records are never updated or deleted.
+// =============================================================================
+model OrderStatusLog {
+  id String @id @default(uuid()) @db.Uuid
+
+  // ---------------------------------------------------------------------------
+  // FK to Order — non-nullable.
+  // onDelete: Restrict — orders are never deleted.
+  // ---------------------------------------------------------------------------
+  orderId String @db.Uuid
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  // ---------------------------------------------------------------------------
+  // Status transition details
+  // ---------------------------------------------------------------------------
+  oldStatus OrderStatus
+  newStatus OrderStatus
+  action    OrderAction
+
+  // ---------------------------------------------------------------------------
+  // Audit details
+  // ---------------------------------------------------------------------------
+  /// The user ID or identifier of the person who made the change.
+  changedBy String
+
+  /// Required for cancellations, optional for other actions.
+  remarks String?
+
+  createdAt DateTime @default(now())
+
+  // ---------------------------------------------------------------------------
+  // Indexes
+  // ---------------------------------------------------------------------------
+  @@index([orderId]) // Fetch full audit log for a specific order
+  @@index([createdAt]) // Chronological order of events
+  @@map("order_status_logs")
+}

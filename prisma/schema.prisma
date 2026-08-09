@@ -1,0 +1,1147 @@
+// =============================================================================
+// QRDineX — Production-Ready Prisma Schema
+// Phase 2: Database Foundation
+// PostgreSQL (Neon) via Prisma ORM
+//
+// Design Principles:
+//  - UUID primary keys on every model (never expose raw IDs publicly)
+//  - restaurantCode is the public-facing identifier for restaurants
+//  - Normalized schema — no duplicate information across tables
+//  - Immutable log tables (RestaurantStatusLog) have no updatedAt
+//  - SOFT DELETE ARCHITECTURE: Restaurants are NEVER hard-deleted.
+//      Status transitions (ACTIVE → INACTIVE) are the only supported
+//      deactivation path. No cascade rules are designed around deletion.
+//  - Cascade rules chosen to protect audit integrity and data history
+//  - Indexes on every foreign key and high-cardinality lookup column
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // directUrl is used by Prisma migrations only.
+  // Neon pooled connections (DATABASE_URL) do not support the advisory locks
+  // required by `prisma migrate`. The direct (non-pooled) endpoint is used
+  // for all migration commands; the pooled URL is used for all runtime queries.
+  directUrl = env("DIRECT_URL")
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+/// Every authenticated user in the system belongs to one of these roles.
+/// Customers are NEVER stored; they interact via anonymous QR sessions.
+enum UserRole {
+  SUPER_ADMIN
+  OWNER
+}
+
+/// Lifecycle status of a restaurant's account on the platform.
+/// A restaurant must be ACTIVE before its OWNER can log in and use the platform.
+enum RestaurantStatus {
+  PENDING // Default after signup — awaiting Super Admin review
+  ACTIVE // Approved and fully operational
+  INACTIVE // Temporarily suspended by Super Admin
+  REJECTED // Permanently rejected; owner cannot appeal from frontend
+}
+
+/// Tracks the onboarding workflow stage for a restaurant's verification.
+enum VerificationStatus {
+  PENDING // Submitted but not yet reviewed
+  CONTACTED // Super Admin has made contact with the owner
+  VERIFIED // Documents / details confirmed
+  REJECTED // Verification failed; restaurant stays in REJECTED status
+}
+
+/// Physical availability state of a dining table.
+/// Managed by the restaurant owner / staff from the dashboard.
+enum DiningTableStatus {
+  AVAILABLE // Table is clean, ready to be seated
+  OCCUPIED // Active dining session in progress
+  OUT_OF_SERVICE // Removed from service (maintenance, reserved, broken)
+}
+
+/// Lifecycle state of a customer's dining visit.
+enum SessionStatus {
+  PENDING // QR scanned; session record created; awaiting first order
+  OPEN // At least one order placed; session is active
+  BILL_REQUESTED // Customer requested the bill
+  INVOICE_GENERATED // Owner generated the invoice
+  COMPLETED // Invoice paid & dining session finalized
+  CLOSED // Owner closed the session
+  EXPIRED // Session never progressed; auto-expired by background job
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  UPI
+  CARD
+  OTHER
+}
+
+/// Lifecycle state of a single order placed during a dining session.
+enum OrderStatus {
+  PLACED // Customer submitted the order; awaiting kitchen acknowledgement
+  ACCEPTED // Kitchen confirmed they received and will prepare the order
+  PREPARING // Kitchen is actively preparing the items
+  READY // All items are ready; waiting for staff to serve
+  SERVED // Items delivered to the table
+  COMPLETED // Order finalised (paid / included in bill)
+  CANCELLED // Order cancelled before preparation completed
+}
+
+/// Explicit actions that trigger an order status transition.
+enum OrderAction {
+  ACCEPT
+  START_PREPARING
+  MARK_READY
+  MARK_SERVED
+  CANCEL
+}
+
+// =============================================================================
+// MODEL 1 — User
+// Stores every authenticated platform user (SUPER_ADMIN and OWNER only).
+// Customers NEVER appear in this table.
+// =============================================================================
+model User {
+  // ---------------------------------------------------------------------------
+  // Primary Key — UUID prevents sequential enumeration attacks
+  // ---------------------------------------------------------------------------
+  id String @id @default(uuid()) @db.Uuid
+
+  // ---------------------------------------------------------------------------
+  // Core identity fields
+  // ---------------------------------------------------------------------------
+  /// Full legal name of the user (used in emails and the admin panel)
+  fullName String
+
+  /// Must be globally unique across all roles.
+  /// Used as the login identifier.
+  email String @unique
+
+  /// Always stored as a bcrypt hash (cost factor ≥ 12).
+  /// Raw passwords are NEVER stored.
+  password String
+
+  /// Contact number — required for owner onboarding verification
+  phoneNumber String
+
+  // ---------------------------------------------------------------------------
+  // Role — determines access scope throughout the application
+  // ---------------------------------------------------------------------------
+  role UserRole @default(OWNER)
+
+  // ---------------------------------------------------------------------------
+  // Timestamps
+  // ---------------------------------------------------------------------------
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ---------------------------------------------------------------------------
+  // Relations
+  // ---------------------------------------------------------------------------
+
+  /// A user with role OWNER may own exactly one Restaurant.
+  /// A SUPER_ADMIN will have no restaurant relation.
+  restaurant Restaurant? @relation("RestaurantOwner")
+
+  /// A SUPER_ADMIN may verify many restaurants over time.
+  /// The relation is nullable — not every user will verify restaurants.
+  verificationsHandled RestaurantVerification[] @relation("VerifiedByAdmin")
+
+  /// A SUPER_ADMIN may change restaurant statuses; every change is logged.
+  statusChanges RestaurantStatusLog[] @relation("StatusChangedByAdmin")
+
+  // ---------------------------------------------------------------------------
+  // Indexes
+  // ---------------------------------------------------------------------------
+  @@index([role]) // Filter users by role efficiently (e.g. list all OWNERs)
+  @@index([email]) // Covered by @unique but explicit for documentation
+  @@map("users")
+}
+
+// =============================================================================
+// MODEL 2 — Restaurant
+// Stores core restaurant profile information.
+// One restaurant ↔ one owner (unique FK enforces this).
+// =============================================================================
+model Restaurant {
+  // ---------------------------------------------------------------------------
+  // Primary Key — UUID, never exposed publicly
+  // ---------------------------------------------------------------------------
+  id String @id @default(uuid()) @db.Uuid
+
+  // ---------------------------------------------------------------------------
+  // Public identifier — short, human-readable, IMMUTABLE after creation.
+  // Format: RST-XXXXXX (generated at signup, e.g. RST-4H8K92)
+  // Used in QR codes, public URLs, and support tickets.
+  // NEVER changed — changing it would break all printed QR codes.
+  // ---------------------------------------------------------------------------
+  restaurantCode String @unique
+
+  // ---------------------------------------------------------------------------
+  // Restaurant profile
+  // ---------------------------------------------------------------------------
+  restaurantName String
+  address        String
+  city           String
+
+  /// Optional extended restaurant profile fields
+  description String? @db.Text
+  phone       String?
+  email       String?
+
+  /// Cloudinary URL — nullable until owner uploads a logo
+  logoUrl String?
+
+  /// Billing settings
+  serviceChargeEnabled Boolean @default(false)
+  serviceChargePercent Decimal @default(0) @db.Decimal(5, 2)
+
+  /// Currency setting (default: INR)
+  currency String @default("INR")
+
+  // ---------------------------------------------------------------------------
+  // Lifecycle status — defaults to PENDING on signup
+  // ---------------------------------------------------------------------------
+  status RestaurantStatus @default(PENDING)
+
+  // ---------------------------------------------------------------------------
+  // Owner FK — unique constraint enforces one-restaurant-per-owner rule.
+  // onDelete: Restrict — deleting a User who owns a Restaurant is BLOCKED.
+  //   Rationale: A restaurant owner must first be unlinked from their
+  //   restaurant before their account can be removed. Since restaurants
+  //   follow a soft-delete architecture (status → INACTIVE, never deleted),
+  //   an owner account should likewise be deactivated at the application
+  //   layer — not physically deleted — to preserve all historical data
+  //   (orders, sessions, QR tokens, status logs, etc.).
+  // ---------------------------------------------------------------------------
+  ownerId String @unique @db.Uuid
+  owner   User   @relation("RestaurantOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+
+  // ---------------------------------------------------------------------------
+  // Timestamps
+  // ---------------------------------------------------------------------------
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ---------------------------------------------------------------------------
+  // Relations
+  // ---------------------------------------------------------------------------
+
+  /// One restaurant has exactly one verification record (created at signup).
+  /// Restaurants are never hard-deleted, so this relation always stays intact.
+  verification RestaurantVerification?
+
+  /// A restaurant accumulates status log entries over its entire lifetime.
+  /// Because restaurants are never hard-deleted, restaurantId in the log
+  /// is always a valid reference — no cascade handling required.
+  statusLogs RestaurantStatusLog[]
+
+  /// Phase 2.1A back-relations — added without modifying existing fields.
+  tables         DiningTable[]
+  menuCategories MenuCategory[]
+  menuItems      MenuItem[]
+
+  /// Phase 2.2 back-relations — session and order history.
+  diningSessions DiningSession[]
+  orders         Order[]
+  invoices       Invoice[]
+
+  // ---------------------------------------------------------------------------
+  // Indexes
+  // ---------------------------------------------------------------------------
+  @@index([status]) // Efficiently list all PENDING / ACTIVE restaurants
+  @@index([city]) // Support geographic filtering for Super Admin panel
+  @@index([ownerId]) // Covered by @unique but declared for join performance
+  @@index([restaurantCode]) // Covered by @unique; explicit for QR lookup path
+  @@map("restaurants")
+}
+
+// =============================================================================
+// MODEL 3 — RestaurantVerification
+// Tracks the full onboarding workflow for each restaurant.
+// Created automatically when a restaurant signs up.
+// Updated as the Super Admin progresses through the review workflow.
+// =============================================================================
+model RestaurantVerification {
+  // ---------------------------------------------------------------------------
+  // Primary Key
+  // ---------------------------------------------------------------------------
+  id String @id @default(uuid()) @db.Uuid
+
+  // ---------------------------------------------------------------------------
+  // FK to Restaurant — one-to-one, mandatory.
+  // onDelete: Restrict — restaurant deletion is BLOCKED at the DB level.
+  //   Rationale: QRDineX uses a soft-delete architecture. Restaurants are
+  //   NEVER physically deleted — they transition to INACTIVE status instead.
+  //   Restrict reinforces this at the database layer as a safety net:
+  //   even if application logic is bypassed, the DB will refuse to delete
+  //   a restaurant that still has a verification record linked to it.
+  // ---------------------------------------------------------------------------
+  restaurantId String     @unique @db.Uuid
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+
+  // ---------------------------------------------------------------------------
+  // Workflow timestamps — only set when each step occurs
+  // ---------------------------------------------------------------------------
+
+  /// When the restaurant first submitted their signup form
+  submittedAt DateTime @default(now())
+
+  /// When a Super Admin first contacted the restaurant owner for verification
+  contactedAt DateTime?
+
+  /// When verification was completed (docs checked, site visit done, etc.)
+  verifiedAt DateTime?
+
+  // ---------------------------------------------------------------------------
+  // FK to the Super Admin who finalized verification — nullable until acted upon.
+  // onDelete: SetNull — if a Super Admin account is removed, verifiedBy
+  //   is set to NULL while the verification record itself is fully preserved.
+  //   Rationale: The verification history belongs to the restaurant, not to
+  //   the individual admin who performed it. Admin turnover must never erase
+  //   the onboarding audit trail. The record remains readable; only the
+  //   specific admin reference becomes anonymous (NULL).
+  // ---------------------------------------------------------------------------
+  verifiedBy      String? @db.Uuid
+  verifiedByAdmin User?   @relation("VerifiedByAdmin", fields: [verifiedBy], references: [id], onDelete: SetNull)
+
+  // ---------------------------------------------------------------------------
+  // Current approval stage
+  // ---------------------------------------------------------------------------
+  approvalStatus VerificationStatus @default(PENDING)
+
+  /// Internal notes by Super Admin (e.g. "Called owner, waiting for documents")
+  remarks String? @db.Text
+
+  // ---------------------------------------------------------------------------
+  // Timestamps (immutable log — no updatedAt; use submittedAt for created)
+  // Note: This model IS mutable (fields like contactedAt get filled in),
+  //       but the timestamps below represent log semantics.
+  //       We include updatedAt here to track last workflow update.
+  // ---------------------------------------------------------------------------
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ---------------------------------------------------------------------------
+  // Indexes
+  // ---------------------------------------------------------------------------
+  @@index([approvalStatus]) // Super Admin dashboard: list all PENDING verifications
+  @@index([verifiedBy]) // Audit: show all verifications handled by a specific admin
+  @@map("restaurant_verifications")
+}
+
+// =============================================================================
+// MODEL 4 — RestaurantStatusLog
+// Immutable audit log of every status change for every restaurant.
+// Records are ONLY inserted, NEVER updated or deleted.
+// This ensures a complete, tamper-evident history of restaurant lifecycle.
+// =============================================================================
+model RestaurantStatusLog {
+  // ---------------------------------------------------------------------------
+  // Primary Key
+  // ---------------------------------------------------------------------------
+  id String @id @default(uuid()) @db.Uuid
+
+  // ---------------------------------------------------------------------------
+  // FK to Restaurant — non-nullable. Always references a real restaurant.
+  // onDelete: Restrict — restaurant deletion is BLOCKED by the DB.
+  //   Rationale: QRDineX restaurants are NEVER hard-deleted (soft-delete
+  //   architecture). The status log is an immutable audit trail that must
+  //   always point to its restaurant. Making restaurantId non-nullable and
+  //   using Restrict makes both the application contract and the DB constraint
+  //   agree: a restaurant with status history cannot be physically removed.
+  //   This also means restaurantId is always queryable — no NULL checks needed.
+  // ---------------------------------------------------------------------------
+  restaurantId String     @db.Uuid
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+
+  // ---------------------------------------------------------------------------
+  // Status transition snapshot
+  // ---------------------------------------------------------------------------
+  oldStatus RestaurantStatus
+  newStatus RestaurantStatus
+
+  /// Human-readable reason for the status change (e.g. "Documents verified")
+  reason String? @db.Text
+
+  // ---------------------------------------------------------------------------
+  // FK to the Super Admin who made the change — mandatory for accountability.
+  // onDelete: SetNull — if the admin account is removed, changedBy becomes
+  //   NULL but the log entry itself is fully preserved.
+  //   Rationale: The status transition event (oldStatus → newStatus, reason,
+  //   timestamp) is more important than the identity of the individual admin.
+  //   Historical audit logs must survive admin offboarding. The log remains
+  //   readable and queryable; only the specific actor reference becomes
+  //   anonymous (NULL). This also unblocks legitimate admin account removal
+  //   without requiring a full data-preservation dance beforehand.
+  // ---------------------------------------------------------------------------
+  changedBy      String? @db.Uuid
+  changedByAdmin User?   @relation("StatusChangedByAdmin", fields: [changedBy], references: [id], onDelete: SetNull)
+
+  // ---------------------------------------------------------------------------
+  // Timestamp — createdAt only (immutable log model, no updatedAt)
+  // ---------------------------------------------------------------------------
+  createdAt DateTime @default(now())
+
+  // ---------------------------------------------------------------------------
+  // Indexes
+  // ---------------------------------------------------------------------------
+  @@index([restaurantId]) // Fetch full history of a specific restaurant efficiently
+  @@index([changedBy]) // Audit: all status changes — changedBy is nullable after admin removal
+  @@index([newStatus]) // Analytics: how many restaurants transitioned to ACTIVE?
+  @@index([createdAt]) // Chronological log queries and time-range filtering
+  @@map("restaurant_status_logs")
+}
+
+// =============================================================================
+// PHASE 2.1A — Restaurant Operations Foundation
+// Models: DiningTable, QrCode, MenuCategory, MenuItem
+// =============================================================================
+
+// =============================================================================
+// MODEL 5 — DiningTable
+// Represents the physical tables inside a restaurant.
+// Each table belongs to exactly one restaurant.
+// Table numbers must be unique within a restaurant (composite unique).
+// =============================================================================
+model DiningTable {
+  // ---------------------------------------------------------------------------
+  // Primary Key — UUID, internal only
+  // ---------------------------------------------------------------------------
+  id String @id @default(uuid()) @db.Uuid
+
+  // ---------------------------------------------------------------------------
+  // FK to Restaurant — non-nullable.
+  // onDelete: Restrict — follows soft-delete architecture.
+  //   Rationale: Restaurants are NEVER hard-deleted. Tables always belong to
+  //   a living restaurant record. Restrict at DB level prevents accidental
+  //   orphaning even if application-layer guards are bypassed.
+  // ---------------------------------------------------------------------------
+  restaurantId String     @db.Uuid
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+
+  // ---------------------------------------------------------------------------
+  // Table identification
+  // ---------------------------------------------------------------------------
+  /// Human-facing table number displayed to staff and customers (e.g. 1, 2, 10)
+  tableNumber Int
+
+  /// Maximum number of guests the table can accommodate
+  capacity Int
+
+  // ---------------------------------------------------------------------------
+  // Operational status — changed by staff during service
+  // ---------------------------------------------------------------------------
+  status DiningTableStatus @default(AVAILABLE)
+
+  // ---------------------------------------------------------------------------
+  // Timestamps
+  // ---------------------------------------------------------------------------
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ---------------------------------------------------------------------------
+  // Relations
+  // ---------------------------------------------------------------------------
+  /// A table accumulates QR code generations over its lifetime.
+  /// Old codes are retained as history — only one is ever active at a time.
+  qrCodes QrCode[]
+
+  /// A table accumulates dining session history over its lifetime.
+  /// Multiple closed sessions are normal — one per customer visit.
+  diningSessions DiningSession[]
+
+  // ---------------------------------------------------------------------------
+  // Constraints
+  // ---------------------------------------------------------------------------
+  /// tableNumber must be unique per restaurant.
+  /// Two different restaurants may both have a "Table 1" — that is expected.
+  /// The same restaurant may NOT have two tables both numbered 5.
+  @@unique([restaurantId, tableNumber], name: "unique_table_per_restaurant")
+  // ---------------------------------------------------------------------------
+  // Indexes
+  // ---------------------------------------------------------------------------
+  @@index([restaurantId]) // List all tables for a restaurant
+  @@index([status]) // Filter by AVAILABLE / OCCUPIED / OUT_OF_SERVICE
+  @@index([restaurantId, status]) // Compound: all AVAILABLE tables in a restaurant
+  @@map("dining_tables")
+}
+
+// =============================================================================
+// MODEL 6 — QrCode
+// Represents a QR code generation event for a dining table.
+// A table can have many QR code generations; only one is ever active.
+// Old QR codes are RETAINED for history — never overwritten or deleted.
+// The token is the public-facing identifier scanned by customers.
+// =============================================================================
+model QrCode {
+  // ---------------------------------------------------------------------------
+  // Primary Key — UUID, internal only.
+  // The token field is the public identifier; UUID is never exposed.
+  // ---------------------------------------------------------------------------
+  id String @id @default(uuid()) @db.Uuid
+
+  // ---------------------------------------------------------------------------
+  // FK to DiningTable — non-nullable.
+  // onDelete: Restrict — tables follow the same soft-delete doctrine as
+  //   restaurants. A table should be set to OUT_OF_SERVICE, not deleted.
+  //   Rationale: QR history must always reference a valid table record.
+  //   If a table is truly decommissioned, it stays in OUT_OF_SERVICE status.
+  // ---------------------------------------------------------------------------
+  tableId String      @db.Uuid
+  table   DiningTable @relation(fields: [tableId], references: [id], onDelete: Restrict)
+
+  // ---------------------------------------------------------------------------
+  // Public identifier — used in the QR code URL scanned by customers.
+  // Generated by the application using nanoid (e.g. "Q7MX92ABK8P").
+  // Globally unique across all restaurants and tables.
+  // IMMUTABLE after creation — regenerating a QR means creating a new record.
+  // ---------------------------------------------------------------------------
+  token String @unique
+
+  // ---------------------------------------------------------------------------
+  // Active flag — only ONE QR code per table should be active at any time.
+  // When a new QR is generated, the previous one is set to isActive = false.
+  // Enforced at the application layer (not via DB constraint) to allow
+  // race-condition-safe atomic updates using transactions.
+  // ---------------------------------------------------------------------------
+  /// true = this is the current scannable QR for the table.
+  /// false = expired/rotated; kept for audit and session history.
+  isActive Boolean @default(true)
+
+  // ---------------------------------------------------------------------------
+  // Timestamp — createdAt only (QR records are immutable log entries).
+  // No updatedAt: isActive changes are the only mutation, tracked by
+  // comparing createdAt of the most recent isActive=true record.
+  // ---------------------------------------------------------------------------
+  createdAt DateTime @default(now())
+
+  // ---------------------------------------------------------------------------
+  // Relations
+  // ---------------------------------------------------------------------------
+  /// A QR code can initiate multiple historical sessions (e.g., if it remains active).
+  diningSessions DiningSession[]
+
+  // ---------------------------------------------------------------------------
+  // Indexes
+  // ---------------------------------------------------------------------------
+  @@index([tableId]) // All QR generations for a specific table
+  @@index([tableId, isActive]) // Hot path: find the currently active QR for a table
+  @@index([token]) // Covered by @unique; explicit for scan-path lookup
+  @@map("qr_codes")
+}
+
+// =============================================================================
+// MODEL 7 — MenuCategory
+// Organises menu items into logical groups (Starters, Mains, Desserts, etc.).
+// Category names must be unique within a restaurant (composite unique).
+// =============================================================================
+model MenuCategory {
+  // ---------------------------------------------------------------------------
+  // Primary Key
+  // ---------------------------------------------------------------------------
+  id String @id @default(uuid()) @db.Uuid
+
+  // ---------------------------------------------------------------------------
+  // FK to Restaurant — non-nullable.
+  // onDelete: Restrict — restaurants are never deleted.
+  //   Rationale: Consistent with the soft-delete architecture. Categories
+  //   belong to an always-existing restaurant record.
+  // ---------------------------------------------------------------------------
+  restaurantId String     @db.Uuid
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+
+  // ---------------------------------------------------------------------------
+  // Category identity
+  // ---------------------------------------------------------------------------
+  /// Display name of the category (e.g. "Starters", "Main Course", "Drinks")
+  name String
+
+  /// Controls the order categories appear in the customer-facing menu.
+  /// Lower values appear first. Default 0; ties are sorted by name.
+  displayOrder Int @default(0)
+
+  /// true = Visible on the customer menu.
+  /// false = Hidden from customers, but preserved for management.
+  isActive Boolean @default(true)
+
+  // ---------------------------------------------------------------------------
+  // Timestamps
+  // ---------------------------------------------------------------------------
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ---------------------------------------------------------------------------
+  // Relations
+  // ---------------------------------------------------------------------------
+  /// A category contains many menu items.
+  /// See MenuItem for cascade rationale.
+  menuItems MenuItem[]
+
+  // ---------------------------------------------------------------------------
+  // Constraints
+  // ---------------------------------------------------------------------------
+  /// Category names must be unique within a restaurant.
+  /// Two different restaurants may both have a "Starters" category.
+  /// The same restaurant may NOT have two categories both named "Starters".
+  @@unique([restaurantId, name], name: "unique_category_per_restaurant")
+  // ---------------------------------------------------------------------------
+  // Indexes
+  // ---------------------------------------------------------------------------
+  @@index([restaurantId]) // List all categories for a restaurant
+  @@index([restaurantId, displayOrder]) // Ordered category list for menu rendering
+  @@map("menu_categories")
+}
+
+// =============================================================================
+// MODEL 8 — MenuItem
+// Stores individual food and beverage items offered by a restaurant.
+// Each item belongs to one restaurant and one category.
+//
+// PRICE POLICY: Prices are mutable (owners can update them at any time).
+// Historical order prices will be snapshot-stored in a future OrderItem model.
+// Never rely on MenuItem.price for historical order value calculations.
+// =============================================================================
+enum MenuItemStatus {
+  ACTIVE
+  OUT_OF_STOCK
+  INACTIVE
+}
+
+model MenuItem {
+  // ---------------------------------------------------------------------------
+  // Primary Key
+  // ---------------------------------------------------------------------------
+  id String @id @default(uuid()) @db.Uuid
+
+  // ---------------------------------------------------------------------------
+  // FK to Restaurant — non-nullable.
+  // onDelete: Restrict — restaurants are never deleted.
+  //   Rationale: Consistent with soft-delete architecture. Items always
+  //   belong to a living restaurant record.
+  // ---------------------------------------------------------------------------
+  restaurantId String     @db.Uuid
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+
+  // ---------------------------------------------------------------------------
+  // FK to MenuCategory — non-nullable.
+  // onDelete: Restrict — deleting a MenuCategory is BLOCKED while it still
+  //   contains MenuItems.
+  //   Rationale: Silently deleting a category would make all its items
+  //   uncategorized and potentially invisible on the customer menu — a silent
+  //   data integrity failure. The owner must explicitly reassign or archive
+  //   items before a category can be removed. This is enforced at DB level.
+  //   Alternative considered: NoAction — Restrict is preferred because it
+  //   gives an immediate, clear error rather than a deferred constraint check,
+  //   making it easier to surface as a user-facing validation message.
+  // ---------------------------------------------------------------------------
+  categoryId String       @db.Uuid
+  category   MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  // ---------------------------------------------------------------------------
+  // Item identity and content
+  // ---------------------------------------------------------------------------
+  itemName String
+
+  /// Optional description shown on the customer-facing menu
+  description String? @db.Text
+
+  // ---------------------------------------------------------------------------
+  // Price — stored as Decimal, NEVER Float.
+  //   Rationale: Floating-point types (Float/Double) use binary fractions
+  //   and cannot represent all decimal values exactly (e.g. 0.1 + 0.2 ≠ 0.3).
+  //   For monetary values, rounding errors compound and cause incorrect totals.
+  //   Decimal maps to PostgreSQL NUMERIC — arbitrary precision, exact storage.
+  // ---------------------------------------------------------------------------
+  price Decimal @db.Decimal(10, 2) // max 99,999,999.99 — sufficient for any currency
+
+  /// Cloudinary URL of the item photo — null until owner uploads an image
+  imageUrl String?
+
+  // ---------------------------------------------------------------------------
+  // Availability and dietary flags
+  // ---------------------------------------------------------------------------
+  /// Status of the item
+  status MenuItemStatus @default(ACTIVE)
+
+  /// Preparation time in minutes
+  prepTimeMinutes Int?
+
+  /// true = vegetarian / vegan; false = contains meat.
+  /// Displayed as a green dot / badge on the customer menu.
+  isVeg Boolean @default(false)
+
+  /// Controls the display order within a category on the customer menu.
+  /// Lower values appear first. Default 0; ties are sorted by itemName.
+  displayOrder Int @default(0)
+
+  // ---------------------------------------------------------------------------
+  // Timestamps
+  // ---------------------------------------------------------------------------
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ---------------------------------------------------------------------------
+  // Relations
+  // ---------------------------------------------------------------------------
+  /// Phase 2.2 back-relation — a MenuItem may appear in many OrderItems.
+  /// onDelete: Restrict on OrderItem prevents deleting a MenuItem with history.
+  orderItems OrderItem[]
+
+  /// Temporary cart items currently waiting to be ordered
+  cartItems CartItem[]
+
+  // ---------------------------------------------------------------------------
+  // Indexes
+  // ---------------------------------------------------------------------------
+  @@index([restaurantId]) // All items for a restaurant
+  @@index([categoryId]) // All items in a category
+  @@index([restaurantId, status]) // Available items for a restaurant (menu render)
+  @@index([categoryId, displayOrder]) // Ordered items within a category
+  @@index([restaurantId, categoryId]) // Items scoped to restaurant + category
+  @@map("menu_items")
+}
+
+// =============================================================================
+// PHASE 2.2 — Customer Session & Order Flow
+// Models: DiningSession, SessionParticipant, Order, OrderItem
+// =============================================================================
+
+enum ParticipantStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// =============================================================================
+// MODEL 8.5 — SessionParticipant
+// Tracks devices connected (or attempting to connect) to a DiningSession.
+// =============================================================================
+model SessionParticipant {
+  id               String           @id @default(uuid()) @db.Uuid
+  sessionId        String           @db.Uuid
+  session          DiningSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  deviceIdentifier String
+  status           ParticipantStatus @default(PENDING)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@unique([sessionId, deviceIdentifier])
+  @@index([sessionId])
+  @@index([deviceIdentifier])
+  @@map("session_participants")
+}
+
+// =============================================================================
+// MODEL 8.6 — CartItem
+// Temporary shopping cart for a DiningSession.
+// =============================================================================
+model CartItem {
+  id         String        @id @default(uuid()) @db.Uuid
+  sessionId  String        @db.Uuid
+  session    DiningSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  menuItemId String        @db.Uuid
+  menuItem   MenuItem      @relation(fields: [menuItemId], references: [id], onDelete: Restrict)
+  quantity   Int           @default(1)
+  
+  // Future proofing for customized instructions
+  notes      String?
+
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@unique([sessionId, menuItemId]) // One entry per item per session
+  @@index([sessionId])
+  @@map("cart_items")
+}
+
+// =============================================================================
+// MODEL 9 — DiningSession
+// Represents one complete customer dining visit.
+// Created immediately after QR token verification.
+// One session per visit; multiple historical sessions per table are expected.
+//
+// OPEN-SESSION UNIQUENESS:
+//   Only one OPEN session per DiningTable is allowed at any time.
+//   PostgreSQL partial unique index enforces this.
+//   Prisma does not support partial indexes natively via @@unique, so we use
+//   a raw migration to add the constraint. See migration note below.
+//
+//   Constraint SQL:
+//   CREATE UNIQUE INDEX "one_open_session_per_table"
+//     ON dining_sessions ("tableId")
+//     WHERE (status = 'OPEN');
+//
+//   This is applied via a custom migration file after `prisma migrate dev`.
+// =============================================================================
+model DiningSession {
+  // ---------------------------------------------------------------------------
+  // Primary Key
+  // ---------------------------------------------------------------------------
+  id String @id @default(uuid()) @db.Uuid
+
+  // ---------------------------------------------------------------------------
+  // FK to Restaurant — non-nullable.
+  // onDelete: Restrict — restaurants are never hard-deleted.
+  //   Rationale: Consistent with soft-delete architecture. All session history
+  //   must remain linked to a valid restaurant record permanently.
+  // ---------------------------------------------------------------------------
+  restaurantId String     @db.Uuid
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+
+  // ---------------------------------------------------------------------------
+  // FK to DiningTable — non-nullable.
+  // onDelete: Restrict — tables use OUT_OF_SERVICE, not deletion.
+  //   Rationale: Historical sessions must always reference the table they
+  //   occurred at. Decommission a table by setting OUT_OF_SERVICE; never
+  //   delete it while it has session history.
+  // ---------------------------------------------------------------------------
+  tableId String      @db.Uuid
+  table   DiningTable @relation(fields: [tableId], references: [id], onDelete: Restrict)
+
+  // ---------------------------------------------------------------------------
+  // FK to QrCode — non-nullable.
+  // onDelete: Restrict — QR history is retained.
+  //   Rationale: A session must trace back to the exact QR code used to start it.
+  // ---------------------------------------------------------------------------
+  qrCodeId String @db.Uuid
+  qrCode   QrCode @relation(fields: [qrCodeId], references: [id], onDelete: Restrict)
+
+  // ---------------------------------------------------------------------------
+  // Public Session Token — used for the customer's browser cookie
+  // ---------------------------------------------------------------------------
+  sessionToken String @unique
+
+  // ---------------------------------------------------------------------------
+  // Session lifecycle status
+  // ---------------------------------------------------------------------------
+  status SessionStatus @default(PENDING)
+
+  // ---------------------------------------------------------------------------
+  // Session timestamps — each set when lifecycle transitions occur
+  // ---------------------------------------------------------------------------
+  /// Set when the first order is placed (PENDING → OPEN)
+  startedAt DateTime?
+
+  /// Set when the owner closes the session after billing (OPEN → CLOSED)
+  closedAt DateTime?
+
+  /// Optional expiry deadline — used by a background job to auto-expire
+  /// sessions that were created (PENDING) but never had an order placed.
+  /// If expiresAt is in the past and status is PENDING, mark as EXPIRED.
+  expiresAt DateTime?
+
+  // ---------------------------------------------------------------------------
+  // Timestamps
+  // ---------------------------------------------------------------------------
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ---------------------------------------------------------------------------
+  // Relations
+  // ---------------------------------------------------------------------------
+  /// A session accumulates orders during the customer's visit.
+  /// Orders must remain even after session is closed — historical records.
+  orders Order[]
+
+  /// Devices connected to this session
+  participants SessionParticipant[]
+
+  /// Shared shopping cart items for this session
+  cartItems CartItem[]
+
+  /// Generated Invoice for this session
+  invoice Invoice?
+
+  /// Audit log of all status transitions for this session
+  statusLogs DiningSessionStatusLog[]
+
+  // ---------------------------------------------------------------------------
+  // Indexes
+  // ---------------------------------------------------------------------------
+  @@index([restaurantId]) // All sessions for a restaurant (dashboard)
+  @@index([tableId]) // Session history for a specific table
+  @@index([status]) // Filter sessions by lifecycle state
+  @@index([tableId, status]) // Hot path: find the OPEN session for a table
+  @@index([restaurantId, status]) // Dashboard: active sessions across all tables
+  @@index([createdAt]) // Chronological session list; time-range queries
+  @@index([expiresAt]) // Background job: find sessions ready to expire
+  @@map("dining_sessions")
+}
+
+// =============================================================================
+// MODEL 10 — Order
+// Stores one "round" of items ordered during a DiningSession.
+// A session can have multiple orders (e.g. starters first, mains later).
+// Orders are PERMANENT — they are never deleted, even after session closes.
+// =============================================================================
+model Order {
+  // ---------------------------------------------------------------------------
+  // Primary Key
+  // ---------------------------------------------------------------------------
+  id String @id @default(uuid()) @db.Uuid
+
+  // ---------------------------------------------------------------------------
+  // FK to Restaurant — non-nullable. Denormalized for fast dashboard queries.
+  // onDelete: Restrict — restaurants are never hard-deleted.
+  //   Rationale: Denormalizing restaurantId here avoids a JOIN through
+  //   DiningSession every time the owner's order dashboard loads. Orders
+  //   must be permanently linked to their restaurant for billing and analytics.
+  // ---------------------------------------------------------------------------
+  restaurantId String     @db.Uuid
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+
+  // ---------------------------------------------------------------------------
+  // FK to DiningSession — non-nullable.
+  // onDelete: Restrict — an order cannot exist without its session.
+  //   Rationale: Sessions follow a lifecycle (PENDING → OPEN → CLOSED);
+  //   they are never deleted. An order must always reference a valid session
+  //   for billing, history, and dispute resolution.
+  // ---------------------------------------------------------------------------
+  sessionId String        @db.Uuid
+  session   DiningSession @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+
+  // ---------------------------------------------------------------------------
+  // Order lifecycle
+  // ---------------------------------------------------------------------------
+  status OrderStatus @default(PLACED)
+
+  // ---------------------------------------------------------------------------
+  // Financial summary
+  // totalAmount = SUM of all OrderItem.subtotal values for this order.
+  // Stored redundantly for fast dashboard/billing aggregation without joins.
+  // Must be recomputed and updated whenever an OrderItem is added or removed.
+  // ---------------------------------------------------------------------------
+  /// Total value of this order. Decimal — NEVER Float (monetary value).
+  totalAmount Decimal @db.Decimal(10, 2)
+
+  // ---------------------------------------------------------------------------
+  // Timestamps
+  // ---------------------------------------------------------------------------
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ---------------------------------------------------------------------------
+  // Relations
+  // ---------------------------------------------------------------------------
+  /// Order contains one or more individual item lines.
+  orderItems OrderItem[]
+
+  /// Audit log of all status transitions for this order.
+  statusLogs OrderStatusLog[]
+
+  // ---------------------------------------------------------------------------
+  // Indexes
+  // ---------------------------------------------------------------------------
+  @@index([restaurantId]) // All orders for a restaurant (dashboard)
+  @@index([sessionId]) // All orders within a session
+  @@index([status]) // Kitchen view: filter by PLACED / PREPARING / READY
+  @@index([restaurantId, status]) // Restaurant dashboard: active orders
+  @@index([sessionId, status]) // Bill: all COMPLETED orders in a session
+  @@index([createdAt]) // Chronological order queue; analytics
+  @@map("orders")
+}
+
+// =============================================================================
+// MODEL 11 — OrderItem
+// Stores one line-item within an Order (one menu item + quantity + price).
+//
+// PRICE SNAPSHOT RULE:
+//   priceAtPurchase stores the MenuItem price at the moment of ordering.
+//   This field is IMMUTABLE after creation.
+//   The current MenuItem.price may change later; OrderItem.priceAtPurchase
+//   must NEVER be updated to reflect that change.
+//   subtotal = quantity × priceAtPurchase — also immutable after creation.
+//
+// OrderItem is an append-only record — no updatedAt field.
+// =============================================================================
+model OrderItem {
+  // ---------------------------------------------------------------------------
+  // Primary Key
+  // ---------------------------------------------------------------------------
+  id String @id @default(uuid()) @db.Uuid
+
+  // ---------------------------------------------------------------------------
+  // FK to Order — non-nullable.
+  // onDelete: Restrict — orders are never deleted.
+  //   Rationale: Historical financial records must remain intact permanently.
+  //   An order item must always reference its parent order.
+  // ---------------------------------------------------------------------------
+  orderId String @db.Uuid
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  // ---------------------------------------------------------------------------
+  // FK to MenuItem — non-nullable.
+  // onDelete: Restrict — a MenuItem cannot be hard-deleted while it has order
+  //   history. Use isAvailable = false to hide it from the customer menu.
+  //   Rationale: Financial and audit records must reference the original item.
+  //   Even if the owner removes the item from the menu, the historical order
+  //   line must remain queryable for billing and dispute resolution.
+  // ---------------------------------------------------------------------------
+  menuItemId String   @db.Uuid
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Restrict)
+
+  // ---------------------------------------------------------------------------
+  // Order line values — ALL IMMUTABLE after creation
+  // ---------------------------------------------------------------------------
+  /// Number of units ordered. Must be ≥ 1. Enforced at application layer.
+  quantity Int
+
+  /// Price per unit at the moment of ordering.
+  /// Copied from MenuItem.price at insert time — NEVER from a re-read later.
+  /// Decimal — NEVER Float (monetary value).
+  priceAtPurchase Decimal @db.Decimal(10, 2)
+
+  /// Pre-computed line total: quantity × priceAtPurchase.
+  /// Stored to avoid runtime multiplication on every order history query.
+  /// Decimal — NEVER Float.
+  subtotal Decimal @db.Decimal(10, 2)
+
+  // ---------------------------------------------------------------------------
+  // Timestamp — createdAt only (immutable record, no updatedAt)
+  // ---------------------------------------------------------------------------
+  createdAt DateTime @default(now())
+
+  // ---------------------------------------------------------------------------
+  // Indexes
+  // ---------------------------------------------------------------------------
+  @@index([orderId]) // All items within an order
+  @@index([menuItemId]) // All order history for a menu item (analytics)
+  @@index([orderId, menuItemId]) // Prevent or detect duplicate item lines per order
+  @@map("order_items")
+}
+
+// =============================================================================
+// MODEL 12 — OrderStatusLog
+// Tracks the full lifecycle and audit trail of an order's status changes.
+// Created automatically inside the Prisma transaction for every status update.
+// IMMUTABLE — records are never updated or deleted.
+// =============================================================================
+model OrderStatusLog {
+  id String @id @default(uuid()) @db.Uuid
+
+  // ---------------------------------------------------------------------------
+  // FK to Order — non-nullable.
+  // onDelete: Restrict — orders are never deleted.
+  // ---------------------------------------------------------------------------
+  orderId String @db.Uuid
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  // ---------------------------------------------------------------------------
+  // Status transition details
+  // ---------------------------------------------------------------------------
+  oldStatus OrderStatus
+  newStatus OrderStatus
+  action    OrderAction
+
+  // ---------------------------------------------------------------------------
+  // Audit details
+  // ---------------------------------------------------------------------------
+  /// The user ID or identifier of the person who made the change.
+  changedBy String
+
+  /// Required for cancellations, optional for other actions.
+  remarks String?
+
+  createdAt DateTime @default(now())
+
+  // ---------------------------------------------------------------------------
+  // Indexes
+  // ---------------------------------------------------------------------------
+  @@index([orderId]) // Fetch full audit log for a specific order
+  @@index([createdAt]) // Chronological order of events
+  @@map("order_status_logs")
+}
+
+// =============================================================================
+// MODEL 13 — DiningSessionStatusLog
+// Tracks the full lifecycle and audit trail of a dining session's status changes.
+// IMMUTABLE — records are never updated or deleted.
+// =============================================================================
+model DiningSessionStatusLog {
+  id String @id @default(uuid()) @db.Uuid
+
+  sessionId String        @db.Uuid
+  session   DiningSession @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+
+  oldStatus SessionStatus
+  newStatus SessionStatus
+
+  changedBy String
+  remarks   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("dining_session_status_logs")
+}
+
+// =============================================================================
+// PHASE 7.6A — Billing Engine & Invoice Lifecycle
+// Models: Invoice, InvoiceItem
+// =============================================================================
+
+model Invoice {
+  id            String        @id @default(uuid()) @db.Uuid
+  invoiceNumber String        @unique
+  sessionId     String        @unique @db.Uuid
+  session       DiningSession @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  restaurantId  String        @db.Uuid
+  restaurant    Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+
+  subtotal       Decimal       @db.Decimal(10, 2)
+  discountAmount Decimal       @default(0) @db.Decimal(10, 2)
+  taxAmount      Decimal       @default(0) @db.Decimal(10, 2)
+  serviceCharge  Decimal       @default(0) @db.Decimal(10, 2)
+  roundOff       Decimal       @default(0) @db.Decimal(10, 2)
+  grandTotal     Decimal       @db.Decimal(10, 2)
+
+  paymentMethod PaymentMethod?
+  paymentStatus PaymentStatus @default(UNPAID)
+
+  generatedAt DateTime  @default(now())
+  paidAt      DateTime?
+  generatedBy String    // Owner user ID
+  paidBy      String?   // Owner user ID
+  notes       String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items InvoiceItem[]
+
+  @@index([restaurantId])
+  @@index([sessionId])
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String   @id @default(uuid()) @db.Uuid
+  invoiceId   String   @db.Uuid
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  orderItemId String?  @db.Uuid
+  itemName    String
+  quantity    Int
+  unitPrice   Decimal  @db.Decimal(10, 2)
+  lineTotal   Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+
+  @@index([invoiceId])
+  @@map("invoice_items")
+}
