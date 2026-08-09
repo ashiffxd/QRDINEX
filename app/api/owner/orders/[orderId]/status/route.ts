@@ -30,7 +30,7 @@ export async function PATCH(
       session.data.restaurantId,
       orderId,
       action,
-      session.data.id, // The owner's user ID acts as "changedBy"
+      session.data.userId, // The owner's user ID acts as "changedBy"
       remarks
     )
 

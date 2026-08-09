@@ -77,7 +77,7 @@ export async function getSessions(restaurantId: string, options: GetSessionsOpti
     id: session.id,
     shortId: session.id.split('-')[0].toUpperCase(),
     tableNumber: session.table.tableNumber,
-    participantsCount: session.participants?.length || 0,
+    participantsCount: (session as any).participants?.length || 0,
     ordersCount: session._count.orders,
     status: session.status,
     startedAt: session.startedAt,
@@ -135,7 +135,7 @@ export async function getSessionDetails(restaurantId: string, sessionId: string)
     ...session,
     shortId: session.id.split('-')[0].toUpperCase(),
     totalAmount,
-    participantsCount: session.participants?.length || 0,
+    participantsCount: (session as any).participants?.length || 0,
     orders: session.orders.map(order => ({
       ...order,
       totalAmount: Number(order.totalAmount),

@@ -28,7 +28,7 @@ export async function PATCH(
     const updatedSession = await completeSession(
       session.data.restaurantId,
       sessionId,
-      session.data.id // The owner's user ID acts as "changedBy"
+      session.data.userId // The owner's user ID acts as "changedBy"
     )
 
     try {

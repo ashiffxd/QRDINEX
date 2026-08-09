@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     const invoice = await generateInvoice(
       session.data.restaurantId,
       sessionId,
-      session.data.id,
+      session.data.userId,
       {
         discountAmount: discountAmount ? Number(discountAmount) : undefined,
         discountPercent: discountPercent ? Number(discountPercent) : undefined,
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         invoiceId: invoice.id,
         sessionId: invoice.sessionId,
         restaurantId: session.data.restaurantId,
-        userId: session.data.id,
+        userId: session.data.userId,
         message: `Invoice ${invoice.invoiceNumber} generated for Table ${payload.tableNumber}. Total: ${payload.grandTotal}`,
       })
     } catch (err) {

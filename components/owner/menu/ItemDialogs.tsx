@@ -16,7 +16,7 @@ export function CreateItemDialog({ isOpen, onClose, categories }: { isOpen: bool
   const [globalError, setGlobalError] = useState<string | null>(null)
   
   const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm<CreateMenuItemInput>({
-    resolver: zodResolver(CreateMenuItemSchema),
+    resolver: zodResolver(CreateMenuItemSchema) as any,
     defaultValues: {
       isVeg: false,
       status: 'ACTIVE',
@@ -131,7 +131,7 @@ export function EditItemDialog({ isOpen, onClose, item, categories }: { isOpen: 
   const [globalError, setGlobalError] = useState<string | null>(null)
   
   const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<UpdateMenuItemInput>({
-    resolver: zodResolver(UpdateMenuItemSchema),
+    resolver: zodResolver(UpdateMenuItemSchema) as any,
     defaultValues: {
       categoryId: item?.categoryId,
       itemName: item?.itemName,

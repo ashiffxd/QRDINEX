@@ -31,7 +31,7 @@ export type UpdateTableInput = z.infer<typeof UpdateTableSchema>
 
 export const UpdateTableStatusSchema = z.object({
   status: z.enum([DiningTableStatus.AVAILABLE, DiningTableStatus.OUT_OF_SERVICE], {
-    errorMap: () => ({ message: 'Status must be AVAILABLE or OUT_OF_SERVICE' }),
+    message: 'Status must be AVAILABLE or OUT_OF_SERVICE',
   }),
 })
 

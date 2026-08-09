@@ -16,7 +16,7 @@ export function CreateTableDialog({ isOpen, onClose }: { isOpen: boolean; onClos
   const [globalError, setGlobalError] = useState<string | null>(null)
   
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<CreateTableInput>({
-    resolver: zodResolver(CreateTableSchema),
+    resolver: zodResolver(CreateTableSchema) as any,
   })
 
   const onSubmit = async (data: CreateTableInput) => {
@@ -82,7 +82,7 @@ export function EditTableDialog({ isOpen, onClose, table }: { isOpen: boolean; o
   const [globalError, setGlobalError] = useState<string | null>(null)
   
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<UpdateTableInput>({
-    resolver: zodResolver(UpdateTableSchema),
+    resolver: zodResolver(UpdateTableSchema) as any,
     defaultValues: {
       tableNumber: table?.tableNumber,
       capacity: table?.capacity,

@@ -16,7 +16,7 @@ import { updateRestaurantStatus } from '@/services/admin/restaurant-lifecycle.se
 
 const updateStatusSchema = z.object({
   action: z.nativeEnum(RestaurantAction, {
-    errorMap: () => ({ message: 'Invalid lifecycle action provided.' }),
+    message: 'Invalid lifecycle action provided.',
   }),
   remarks: z.string().optional(),
 }).refine(
@@ -37,7 +37,7 @@ export async function PATCH(
   { params }: { params: Promise<{ restaurantId: string }> }
 ) {
   // 1. Verify Authentication & Authorization (SUPER_ADMIN only)
-  const sessionResult = await requireRole('SUPER_ADMIN')
+  const sessionResult = await requireRole(['SUPER_ADMIN'])
 
   if (!sessionResult.success) {
     return NextResponse.json(

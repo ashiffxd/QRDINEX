@@ -168,7 +168,7 @@ export async function updateTableStatus(restaurantId: string, tableId: string, d
     return { success: false, code: 'INVALID_STATUS_TRANSITION', message: 'Cannot manually change status of an occupied table. The dining session must be ended first.' }
   }
 
-  if (data.status === DiningTableStatus.OCCUPIED) {
+  if ((data.status as string) === DiningTableStatus.OCCUPIED) {
     return { success: false, code: 'INVALID_STATUS_TRANSITION', message: 'Cannot manually set status to OCCUPIED. This is controlled by dining sessions.' }
   }
 

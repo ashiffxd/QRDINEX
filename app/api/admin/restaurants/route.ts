@@ -6,7 +6,7 @@ import { getPaginatedRestaurants } from '@/services/admin/restaurant.service'
 
 export async function GET(request: NextRequest) {
   // 1. Verify Authentication & Authorization (SUPER_ADMIN only)
-  const sessionResult = await requireRole('SUPER_ADMIN')
+  const sessionResult = await requireRole(['SUPER_ADMIN'])
 
   if (!sessionResult.success) {
     return NextResponse.json(

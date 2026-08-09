@@ -25,19 +25,19 @@ import {
 // ---------------------------------------------------------------------------
 
 const fullNameSchema = z
-  .string({ required_error: 'Full name is required.' })
+  .string({ message: 'Full name is required.' })
   .trim()
   .min(2, 'Full name must be at least 2 characters.')
   .max(100, 'Full name must not exceed 100 characters.')
 
 const restaurantNameSchema = z
-  .string({ required_error: 'Restaurant name is required.' })
+  .string({ message: 'Restaurant name is required.' })
   .trim()
   .min(2, 'Restaurant name must be at least 2 characters.')
   .max(120, 'Restaurant name must not exceed 120 characters.')
 
 const emailSchema = z
-  .string({ required_error: 'Email address is required.' })
+  .string({ message: 'Email address is required.' })
   .trim()
   .toLowerCase()
   .min(1, 'Email address is required.')
@@ -45,7 +45,7 @@ const emailSchema = z
   .max(254, 'Email address is too long.')
 
 const phoneSchema = z
-  .string({ required_error: 'Phone number is required.' })
+  .string({ message: 'Phone number is required.' })
   .trim()
   .min(7, 'Phone number must be at least 7 digits.')
   .max(20, 'Phone number must not exceed 20 characters.')
@@ -55,19 +55,19 @@ const phoneSchema = z
   )
 
 const addressSchema = z
-  .string({ required_error: 'Restaurant address is required.' })
+  .string({ message: 'Restaurant address is required.' })
   .trim()
   .min(5, 'Address must be at least 5 characters.')
   .max(300, 'Address must not exceed 300 characters.')
 
 const citySchema = z
-  .string({ required_error: 'City is required.' })
+  .string({ message: 'City is required.' })
   .trim()
   .min(2, 'City name must be at least 2 characters.')
   .max(100, 'City name must not exceed 100 characters.')
 
 const passwordSchema = z
-  .string({ required_error: 'Password is required.' })
+  .string({ message: 'Password is required.' })
   .min(
     PASSWORD_MIN_LENGTH,
     `Password must be at least ${PASSWORD_MIN_LENGTH} characters long.`,
@@ -82,7 +82,7 @@ const passwordSchema = z
   .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character.')
 
 const confirmPasswordSchema = z
-  .string({ required_error: 'Please confirm your password.' })
+  .string({ message: 'Please confirm your password.' })
   .min(1, 'Please confirm your password.')
 
 // ---------------------------------------------------------------------------

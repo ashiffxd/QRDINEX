@@ -140,7 +140,7 @@ export async function getOverviewAnalytics(restaurantId: string, filterOptions: 
   let avgSessionDurationMins = 0
   if (sessions.length > 0) {
     const totalMins = sessions.reduce((acc, s) => {
-      const start = new Date(s.startedAt).getTime()
+      const start = new Date(s.startedAt || s.updatedAt).getTime()
       const end = new Date(s.updatedAt).getTime()
       return acc + Math.max(1, (end - start) / (1000 * 60))
     }, 0)
@@ -418,7 +418,7 @@ export async function getTableAnalytics(restaurantId: string, filterOptions: Dat
 
   const durationMap: Record<string, number[]> = {}
   completedSessions.forEach((s) => {
-    const mins = Math.max(1, (new Date(s.updatedAt).getTime() - new Date(s.startedAt).getTime()) / (1000 * 60))
+    const mins = Math.max(1, (new Date(s.updatedAt).getTime() - new Date(s.startedAt || s.updatedAt).getTime()) / (1000 * 60))
     if (!durationMap[s.tableId]) durationMap[s.tableId] = []
     durationMap[s.tableId].push(mins)
   })
@@ -550,7 +550,7 @@ export async function getSessionAnalytics(restaurantId: string, filterOptions: D
   let avgDiningDurationMins = 0
   if (completedSessions.length > 0) {
     const totalMins = completedSessions.reduce((acc, s) => {
-      const start = new Date(s.startedAt).getTime()
+      const start = new Date(s.startedAt || s.updatedAt).getTime()
       const end = new Date(s.updatedAt).getTime()
       return acc + Math.max(1, (end - start) / (1000 * 60))
     }, 0)

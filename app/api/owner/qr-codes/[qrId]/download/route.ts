@@ -27,7 +27,7 @@ export async function GET(
     headers.set('Content-Disposition', `attachment; filename="Table-${qrData.table.tableNumber}-QR.png"`)
     headers.set('Content-Length', buffer.length.toString())
 
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers,
     })

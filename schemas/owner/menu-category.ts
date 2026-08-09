@@ -22,7 +22,7 @@ export type UpdateCategoryInput = z.infer<typeof UpdateCategorySchema>
 
 export const UpdateCategoryStatusSchema = z.object({
   isActive: z.boolean({
-    required_error: 'isActive is required',
+    message: 'isActive is required',
   }),
 })
 

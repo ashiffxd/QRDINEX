@@ -100,7 +100,7 @@ export function CustomerInvoiceClient({
         return {
           ...prev,
           paymentStatus: 'PAID',
-          paymentMethod: payload.paymentMethod || 'CASH',
+          paymentMethod: (payload.paymentMethod as 'CASH' | 'UPI' | 'CARD' | 'OTHER') || 'CASH',
           paidAt: payload.paidAt || new Date().toISOString(),
         }
       })

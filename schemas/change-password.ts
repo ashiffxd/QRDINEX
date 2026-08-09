@@ -21,11 +21,11 @@ import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from '@/constants/auth'
 // ---------------------------------------------------------------------------
 
 const currentPasswordSchema = z
-  .string({ required_error: 'Current password is required.' })
+  .string({ message: 'Current password is required.' })
   .min(1, 'Current password is required.')
 
 const newPasswordSchema = z
-  .string({ required_error: 'New password is required.' })
+  .string({ message: 'New password is required.' })
   .min(
     PASSWORD_MIN_LENGTH,
     `Password must be at least ${PASSWORD_MIN_LENGTH} characters long.`,
@@ -40,7 +40,7 @@ const newPasswordSchema = z
   .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character.')
 
 const confirmPasswordSchema = z
-  .string({ required_error: 'Please confirm your new password.' })
+  .string({ message: 'Please confirm your new password.' })
   .min(1, 'Please confirm your new password.')
 
 // ---------------------------------------------------------------------------

@@ -35,7 +35,7 @@ export async function PATCH(
     const invoice = await markInvoicePaid(
       session.data.restaurantId,
       id,
-      session.data.id,
+      session.data.userId,
       selectedMethod,
       notes
     )
@@ -68,7 +68,7 @@ export async function PATCH(
         invoiceId: invoice.id,
         sessionId: invoice.sessionId,
         restaurantId: session.data.restaurantId,
-        userId: session.data.id,
+        userId: session.data.userId,
         message: `Invoice ${invoice.invoiceNumber} paid via ${selectedMethod}. Session completed.`,
       })
     } catch (err) {

@@ -126,6 +126,7 @@ export interface OwnerServerToClientEvents {
   'session:bill_requested': (payload: SessionBillRequestedPayload) => void
   'session:closed': (payload: SessionClosedPayload) => void
   'participant:join_request': (payload: ParticipantJoinRequestPayload) => void
+  'participant:action_resolved': (payload: ParticipantActionResolvedPayload) => void
   'invoice:generated': (payload: InvoiceGeneratedPayload) => void
   'invoice:paid': (payload: InvoicePaidPayload) => void
 }

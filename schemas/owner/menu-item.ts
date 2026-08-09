@@ -29,7 +29,7 @@ export type UpdateMenuItemInput = z.infer<typeof UpdateMenuItemSchema>
 
 export const UpdateMenuItemStatusSchema = z.object({
   status: z.nativeEnum(MenuItemStatus, {
-    required_error: 'Status is required',
+    message: 'Status is required',
   }),
 })
 

@@ -144,6 +144,10 @@ export const AuthErrorCode = {
   UNAUTHORIZED: 'UNAUTHORIZED',
   FORBIDDEN: 'FORBIDDEN',
 
+  // Input validation errors
+  INVALID_INPUT: 'INVALID_INPUT',
+  EMAIL_ALREADY_EXISTS: 'EMAIL_ALREADY_EXISTS',
+
   // System errors
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const
