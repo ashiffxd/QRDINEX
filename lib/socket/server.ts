@@ -36,7 +36,7 @@ import { setupCustomerNamespace } from './namespaces/customer'
  * @returns           The configured Socket.IO Server instance.
  */
 export function createSocketServer(httpServer: HTTPServer): Server {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000').replace(/\/$/, '')
 
   const io = new Server(httpServer, {
     // ----------------------------------------------------------
