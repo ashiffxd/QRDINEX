@@ -9,7 +9,7 @@ export default async function OwnerLayout({
   children: React.ReactNode
 }) {
   // 1. Enforce OWNER role
-  const sessionResult = await requireRole('OWNER')
+  const sessionResult = await requireRole(['OWNER'])
   if (!sessionResult.success) {
     redirect('/login')
   }

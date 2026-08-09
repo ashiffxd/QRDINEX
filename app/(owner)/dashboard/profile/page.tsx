@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 }
 
 export default async function ProfilePage() {
-  const auth = await requireRole('OWNER')
+  const auth = await requireRole(['OWNER'])
   if (!auth.success) {
     redirect('/login')
   }

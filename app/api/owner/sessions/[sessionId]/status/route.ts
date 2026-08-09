@@ -9,7 +9,7 @@ export async function PATCH(
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
-    const session = await requireRole('OWNER')
+    const session = await requireRole(['OWNER'])
     if (!session.success || !session.data.restaurantId) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
     }

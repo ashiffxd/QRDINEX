@@ -4,7 +4,7 @@ import { getDashboardStats } from '@/services/owner/dashboard.service'
 
 export async function GET(_request: NextRequest) {
   try {
-    const session = await requireRole('OWNER')
+    const session = await requireRole(['OWNER'])
     if (!session.success || !session.data.restaurantId) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
     }

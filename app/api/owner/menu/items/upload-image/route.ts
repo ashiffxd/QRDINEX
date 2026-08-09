@@ -3,7 +3,7 @@ import { requireRole } from '@/lib/auth/session'
 import { uploadImageBuffer } from '@/services/owner/cloudinary.service'
 
 export async function POST(request: NextRequest) {
-  const sessionResult = await requireRole('OWNER')
+  const sessionResult = await requireRole(['OWNER'])
   if (!sessionResult.success || !sessionResult.data.restaurantId) {
     return NextResponse.json({ success: false, code: 'UNAUTHORIZED', message: 'Unauthorized' }, { status: 401 })
   }

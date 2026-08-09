@@ -4,7 +4,7 @@ import { updateUserProfile } from '@/services/auth/account.service'
 
 export async function PATCH(request: NextRequest) {
   try {
-    const auth = await requireRole('OWNER')
+    const auth = await requireRole(['OWNER'])
     if (!auth.success) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
     }

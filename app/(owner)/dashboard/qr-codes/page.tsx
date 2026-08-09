@@ -17,7 +17,7 @@ export default async function QrCodesPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const sessionResult = await requireRole('OWNER')
+  const sessionResult = await requireRole(['OWNER'])
   if (!sessionResult.success || !sessionResult.data.restaurantId) {
     redirect('/login')
   }

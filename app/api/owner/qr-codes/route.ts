@@ -4,7 +4,7 @@ import { TableQuerySchema } from '@/schemas/owner/table-query'
 import { getPaginatedTableQRs, generateQrCode } from '@/services/owner/qrcode.service'
 
 export async function GET(request: NextRequest) {
-  const sessionResult = await requireRole('OWNER')
+  const sessionResult = await requireRole(['OWNER'])
   if (!sessionResult.success || !sessionResult.data.restaurantId) {
     return NextResponse.json({ success: false, code: 'UNAUTHORIZED', message: 'Unauthorized' }, { status: 401 })
   }
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const sessionResult = await requireRole('OWNER')
+  const sessionResult = await requireRole(['OWNER'])
   if (!sessionResult.success || !sessionResult.data.restaurantId) {
     return NextResponse.json({ success: false, code: 'UNAUTHORIZED', message: 'Unauthorized' }, { status: 401 })
   }

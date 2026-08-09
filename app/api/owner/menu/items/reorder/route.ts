@@ -4,7 +4,7 @@ import { ReorderMenuItemsSchema } from '@/schemas/owner/menu-item'
 import { reorderMenuItems } from '@/services/owner/menu-item.service'
 
 export async function PATCH(request: NextRequest) {
-  const sessionResult = await requireRole('OWNER')
+  const sessionResult = await requireRole(['OWNER'])
   if (!sessionResult.success || !sessionResult.data.restaurantId) {
     return NextResponse.json({ success: false, code: 'UNAUTHORIZED', message: 'Unauthorized' }, { status: 401 })
   }

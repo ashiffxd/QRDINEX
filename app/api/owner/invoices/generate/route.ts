@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await requireRole('OWNER')
+    const session = await requireRole(['OWNER'])
     if (!session.success || !session.data.restaurantId) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
     }

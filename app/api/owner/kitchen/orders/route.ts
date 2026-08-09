@@ -4,7 +4,7 @@ import { getKitchenOrders } from '@/services/owner/order.service'
 
 export async function GET() {
   try {
-    const auth = await requireRole('OWNER')
+    const auth = await requireRole(['OWNER'])
     if (!auth.success || !auth.data.restaurantId) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
     }

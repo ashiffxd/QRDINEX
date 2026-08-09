@@ -5,7 +5,7 @@ import { deleteAuthCookie } from '@/lib/auth/cookie'
 
 export async function PATCH(request: NextRequest) {
   try {
-    const auth = await requireRole('OWNER')
+    const auth = await requireRole(['OWNER'])
     if (!auth.success) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
     }

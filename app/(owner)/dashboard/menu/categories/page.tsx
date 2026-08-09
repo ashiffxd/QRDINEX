@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 }
 
 export default async function MenuCategoriesPage() {
-  const sessionResult = await requireRole('OWNER')
+  const sessionResult = await requireRole(['OWNER'])
   if (!sessionResult.success || !sessionResult.data.restaurantId) {
     redirect('/login')
   }
