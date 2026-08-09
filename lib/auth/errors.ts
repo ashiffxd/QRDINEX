@@ -118,6 +118,12 @@ export function authErrorToHttpStatus(error: AuthError): number {
     case Code.PASSWORD_SAME_AS_CURRENT:
       return 422
 
+    case Code.INVALID_INPUT:
+      return 400
+
+    case Code.EMAIL_ALREADY_EXISTS:
+      return 409
+
     case Code.INTERNAL_ERROR:
     default:
       return 500
@@ -147,5 +153,7 @@ export const AUTH_ERROR_MESSAGES: Record<AuthErrorCode, string> = {
   SESSION_EXPIRED: 'Your session has expired. Please log in again.',
   UNAUTHORIZED: 'Authentication required. Please log in.',
   FORBIDDEN: 'You do not have permission to perform this action.',
+  INVALID_INPUT: 'Invalid input data provided.',
+  EMAIL_ALREADY_EXISTS: 'An account with this email address already exists.',
   INTERNAL_ERROR: 'An unexpected error occurred. Please try again.',
 } as const
