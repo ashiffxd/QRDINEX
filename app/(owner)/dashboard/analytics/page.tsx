@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 }
 
 export default async function OwnerAnalyticsPage() {
-  const auth = await requireRole('OWNER')
+  const auth = await requireRole(['OWNER'])
   if (!auth.success || !auth.data.restaurantId) {
     redirect('/login')
   }
