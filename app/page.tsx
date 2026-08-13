@@ -363,7 +363,7 @@ const nextFeature = () => {
       href="/signup"
       className="inline-flex h-8 items-center rounded-full bg-blue-700 px-4 font-nav text-xs font-semibold text-white shadow hover:bg-blue-600 hover:shadow-md hover:-translate-y-px transition-all"
     >
-      Start Free Trial
+      Signup
     </a>
   </nav>
 </header>
