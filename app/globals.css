@@ -71,9 +71,77 @@
     @apply border-border;
   }
   body {
-    @apply bg-background font-sans text-foreground antialiased;
+    @apply bg-[#050505] font-sans text-slate-100 antialiased selection:bg-[#00D6FF]/30 selection:text-[#00D6FF];
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-display tracking-tight;
   }
 }
+
+/* Custom Scrollbar & Glassmorphism Utilities */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #050505;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00D6FF;
+}
+
+.glass-panel {
+  background: rgba(10, 10, 12, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.glass-panel-glow {
+  background: rgba(10, 10, 12, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(0, 214, 255, 0.2);
+  box-shadow: 0 0 30px rgba(0, 80, 255, 0.15), inset 0 0 15px rgba(0, 214, 255, 0.05);
+}
+
+.text-gradient-cyan {
+  background: linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 40%, #00D6FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-blue {
+  background: linear-gradient(135deg, #00D6FF 0%, #0050FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.glow-orb-cyan {
+  box-shadow: 0 0 80px 20px rgba(0, 214, 255, 0.25);
+}
+
+.glow-orb-blue {
+  box-shadow: 0 0 120px 40px rgba(0, 80, 255, 0.3);
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+
