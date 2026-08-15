@@ -28,7 +28,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { restaurantName, logoUrl, description, address, city, phone, email } = body
+    const { restaurantName, logoUrl, description, address, city, phone, email, sessionMode } = body
 
     if (restaurantName !== undefined && (typeof restaurantName !== 'string' || !restaurantName.trim())) {
       return NextResponse.json({ success: false, message: 'Restaurant name cannot be empty.' }, { status: 400 })
@@ -36,6 +36,10 @@ export async function PATCH(request: NextRequest) {
 
     if (email && typeof email === 'string' && !email.includes('@')) {
       return NextResponse.json({ success: false, message: 'Invalid email address.' }, { status: 400 })
+    }
+
+    if (sessionMode !== undefined && sessionMode !== 'OPEN' && sessionMode !== 'APPROVAL') {
+      return NextResponse.json({ success: false, message: 'Invalid session mode.' }, { status: 400 })
     }
 
     const updated = await updateRestaurantProfile(auth.data.restaurantId, {
@@ -46,6 +50,7 @@ export async function PATCH(request: NextRequest) {
       city,
       phone,
       email,
+      sessionMode,
     })
 
     return NextResponse.json({ success: true, restaurant: updated })

@@ -19,6 +19,8 @@ export interface QRValidationResult {
     restaurantName: string
     tableId: string
     tableNumber: number
+    /** Whether the owner must approve before the customer sees the menu. */
+    sessionMode: 'OPEN' | 'APPROVAL'
   }
 }
 
@@ -28,15 +30,15 @@ export interface QRValidationResult {
 
 /**
  * Validates a QR token scanned by a customer.
- * 
+ *
  * Rules:
  * 1. Token must exist and be active.
  * 2. Associated Restaurant must be ACTIVE.
  * 3. Associated Table must NOT be OUT_OF_SERVICE.
- * 
+ *
  * Never exposes full DB models to prevent data leakage.
  * Only returns what is strictly necessary to proceed to the next step.
- * 
+ *
  * @param token The raw token string from the URL path.
  * @returns QRValidationResult containing safe data or a specific error code.
  */
@@ -76,7 +78,7 @@ export async function validateQrToken(token: string): Promise<QRValidationResult
     return { success: false, error: 'TABLE_UNAVAILABLE' }
   }
 
-  // 6. Success - Return only safe, necessary data
+  // 6. Success — Return only safe, necessary data
   return {
     success: true,
     data: {
@@ -85,6 +87,7 @@ export async function validateQrToken(token: string): Promise<QRValidationResult
       restaurantName: restaurant.restaurantName,
       tableId: table.id,
       tableNumber: table.tableNumber,
+      sessionMode: restaurant.sessionMode,
     },
   }
 }

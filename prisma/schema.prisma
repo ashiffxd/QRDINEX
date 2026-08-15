@@ -101,6 +101,33 @@ enum OrderStatus {
 }
 
 /// Explicit actions that trigger an order status transition.
+/// Controls how a new dining session is gated when a customer scans the table QR.
+/// OPEN    — customer goes straight to the menu with no owner interaction.
+/// APPROVAL — owner must tap Accept on the Table Management Panel before the
+///            customer can see the menu. Recommended for restaurants with printed
+///            permanent QR codes to prevent remote/cross-table ordering.
+enum SessionMode {
+  OPEN
+  APPROVAL
+}
+
+/// Tracks whether the owner has approved a new dining session.
+/// Only meaningful when the restaurant's sessionMode = APPROVAL.
+/// In OPEN mode, sessions are created with APPROVED immediately.
+enum OwnerApprovalStatus {
+  PENDING  // Waiting for owner to tap Accept on the Table Panel
+  APPROVED // Owner approved — customer can access the menu
+  REJECTED // Owner rejected — customer sees "table not available"
+}
+
+/// Role of a participant within a dining session.
+/// HOST   — the first device to scan the QR; can approve join requests.
+/// GUEST  — joined an existing session after HOST approval.
+enum ParticipantRole {
+  HOST
+  GUEST
+}
+
 enum OrderAction {
   ACCEPT
   START_PREPARING
@@ -211,6 +238,10 @@ model Restaurant {
 
   /// Currency setting (default: INR)
   currency String @default("INR")
+
+  /// Controls how new table sessions are gated when a customer scans.
+  /// APPROVAL is the safe default for restaurants with printed permanent QR codes.
+  sessionMode SessionMode @default(APPROVAL)
 
   // ---------------------------------------------------------------------------
   // Lifecycle status — defaults to PENDING on signup
@@ -731,17 +762,28 @@ enum ParticipantStatus {
 // Tracks devices connected (or attempting to connect) to a DiningSession.
 // =============================================================================
 model SessionParticipant {
-  id               String           @id @default(uuid()) @db.Uuid
-  sessionId        String           @db.Uuid
-  session          DiningSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  id               String            @id @default(uuid()) @db.Uuid
+  sessionId        String            @db.Uuid
+  session          DiningSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   deviceIdentifier String
   status           ParticipantStatus @default(PENDING)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+
+  /// Role within the session.
+  /// HOST = first scanner; can approve join requests.
+  /// GUEST = joined after HOST approval.
+  role             ParticipantRole   @default(HOST)
+
+  /// Display name entered by the participant when requesting to join.
+  /// Set by GUEST participants (Option B). Null for the HOST.
+  displayName      String?
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
   @@unique([sessionId, deviceIdentifier])
   @@index([sessionId])
   @@index([deviceIdentifier])
+  @@index([sessionId, role]) // Fast HOST lookup for join-request approval
   @@map("session_participants")
 }
 
@@ -829,6 +871,12 @@ model DiningSession {
   // Session lifecycle status
   // ---------------------------------------------------------------------------
   status SessionStatus @default(PENDING)
+
+  // ---------------------------------------------------------------------------
+  // Owner approval — only relevant when restaurant.sessionMode = APPROVAL.
+  // In OPEN mode this is set to APPROVED at creation time.
+  // ---------------------------------------------------------------------------
+  ownerApproval OwnerApprovalStatus @default(PENDING)
 
   // ---------------------------------------------------------------------------
   // Session timestamps — each set when lifecycle transitions occur

@@ -27,7 +27,7 @@ export function FloatingCartButton() {
           <span className="font-semibold">View Cart</span>
         </div>
         <span className="font-bold tracking-tight">
-          ${cart.subtotal.toFixed(2)}
+          ₹{cart.subtotal.toFixed(2)}
         </span>
       </Link>
     </div>

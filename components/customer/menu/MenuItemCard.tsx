@@ -47,7 +47,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
 
         <div className="mt-3 flex items-center justify-between">
           <span className="font-bold text-foreground">
-            ${item.price.toFixed(2)}
+            ₹{item.price.toFixed(2)}
           </span>
           {item.prepTimeMinutes && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">

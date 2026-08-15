@@ -97,7 +97,7 @@ export function CartClient() {
         <div className="mx-auto max-w-2xl">
           <div className="mb-4 flex items-center justify-between text-base font-medium text-foreground">
             <span>Subtotal ({cart.totalItems} items)</span>
-            <span className="font-bold">${cart.subtotal.toFixed(2)}</span>
+            <span className="font-bold">₹{cart.subtotal.toFixed(2)}</span>
           </div>
 
           {placeError && (

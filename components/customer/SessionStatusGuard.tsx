@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { useCustomerSocket } from '@/hooks/useCustomerSocket'
 import { SESSION_EVENTS, INVOICE_EVENTS } from '@/lib/socket/events'
 import { AlertTriangle, Receipt, CheckCircle2, ChevronRight } from 'lucide-react'
+import { JoinRequestToast } from './JoinRequestToast'
 
 export function SessionStatusGuard({ children }: { children: React.ReactNode }) {
   const [sessionState, setSessionState] = useState<'ACTIVE' | 'INVOICE_GENERATED' | 'COMPLETED'>('ACTIVE')
@@ -51,6 +52,8 @@ export function SessionStatusGuard({ children }: { children: React.ReactNode }) 
         </Link>
       )}
       {children}
+      {/* JOIN REQUEST TOASTS — only visible to the HOST participant */}
+      <JoinRequestToast />
     </>
   )
 }

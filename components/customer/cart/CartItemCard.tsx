@@ -52,7 +52,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
               </h3>
             </div>
             <p className="font-bold text-foreground">
-              ${item.price.toFixed(2)}
+              ₹{item.price.toFixed(2)}
             </p>
           </div>
 

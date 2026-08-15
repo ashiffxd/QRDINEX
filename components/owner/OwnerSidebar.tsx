@@ -14,7 +14,8 @@ import {
   QrCode,
   Users,
   ChefHat,
-  BarChart3
+  BarChart3,
+  Monitor
 } from 'lucide-react'
 
 interface OwnerSidebarProps {
@@ -40,6 +41,7 @@ export function OwnerSidebar({ onClose }: OwnerSidebarProps) {
     {
       title: 'Operations',
       items: [
+        { name: 'Live Table Monitor', href: '/dashboard/tables/live', icon: Monitor },
         { name: 'Dining Tables', href: '/dashboard/tables', icon: Building2 },
         { name: 'QR Codes', href: '/dashboard/qr-codes', icon: QrCode },
         { name: 'Menu Categories', href: '/dashboard/menu/categories', icon: ListOrdered },

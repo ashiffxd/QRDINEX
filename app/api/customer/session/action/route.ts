@@ -1,8 +1,20 @@
+/**
+ * POST /api/customer/session/action
+ *
+ * The HOST (Person A) calls this to approve or reject a join request from Person B.
+ *
+ * Body: { participantId: string, action: 'APPROVE' | 'REJECT' }
+ *
+ * Security: Validates that the caller is the HOST participant of the session.
+ * Only a HOST can approve/reject join requests.
+ */
+
 import { NextRequest, NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import { approveParticipant, rejectParticipant } from '@/services/customer/join.service'
 import { getDeviceId } from '@/lib/auth/device'
 import { cookies } from 'next/headers'
 import { socketEmitter, PARTICIPANT_EVENTS } from '@/lib/socket'
+import prisma from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,50 +32,44 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
     }
 
-    // Verify requestor
+    // Resolve the session from the cookie
     const activeSession = await prisma.diningSession.findUnique({
       where: { sessionToken },
-      include: { participants: true },
+      select: { id: true, restaurantId: true },
     })
 
     if (!activeSession) {
       return NextResponse.json({ success: false, message: 'Session not found' }, { status: 404 })
     }
 
-    const requestor = activeSession.participants.find(
-      (p) => p.deviceIdentifier === deviceId && p.status === 'APPROVED'
-    )
+    // Delegate to join service (validates HOST role internally)
+    const result =
+      action === 'APPROVE'
+        ? await approveParticipant(activeSession.id, participantId, deviceId)
+        : await rejectParticipant(activeSession.id, participantId, deviceId)
 
-    if (!requestor) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 403 })
-    }
-
-    // Verify target participant belongs to the same session
-    const target = activeSession.participants.find((p) => p.id === participantId)
-    if (!target) {
-      return NextResponse.json({ success: false, message: 'Participant not found in this session' }, { status: 404 })
-    }
-
-    if (target.status !== 'PENDING') {
-      return NextResponse.json({ success: false, message: 'Participant is not pending' }, { status: 400 })
-    }
-
-    await prisma.sessionParticipant.update({
-      where: { id: participantId },
-      data: { status: action === 'APPROVE' ? 'APPROVED' : 'REJECTED' },
-    })
-
-    try {
-      const payload = {
-        sessionId: activeSession.id,
-        participantId,
-        newStatus: (action === 'APPROVE' ? 'APPROVED' : 'REJECTED') as 'APPROVED' | 'REJECTED',
+    if (!result.success) {
+      const statusMap: Record<string, number> = {
+        NOT_HOST: 403,
+        PARTICIPANT_NOT_FOUND: 404,
+        SESSION_NOT_FOUND: 404,
+        DB_ERROR: 500,
       }
-      socketEmitter.emitToRestaurant(activeSession.restaurantId, PARTICIPANT_EVENTS.ACTION_RESOLVED, payload)
-      socketEmitter.emitToSession(activeSession.id, PARTICIPANT_EVENTS.ACTION_RESOLVED, payload)
-    } catch (err) {
-      console.error('[Action API] Socket emit error:', err)
+      return NextResponse.json(
+        { success: false, code: result.error },
+        { status: statusMap[result.error ?? 'DB_ERROR'] ?? 400 }
+      )
     }
+
+    // Emit result to the session room — Person B is listening for their participantId
+    const newStatus = action === 'APPROVE' ? 'APPROVED' : 'REJECTED'
+    const payload = {
+      sessionId: activeSession.id,
+      participantId,
+      newStatus: newStatus as 'APPROVED' | 'REJECTED',
+    }
+
+    socketEmitter.emitToSession(activeSession.id, PARTICIPANT_EVENTS.ACTION_RESOLVED, payload)
 
     return NextResponse.json({ success: true })
   } catch (error) {

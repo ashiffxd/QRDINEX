@@ -221,8 +221,8 @@ export function BillingModal({ sessionId, onClose, onSuccess }: BillingModalProp
                       <tr key={item.id || idx}>
                         <td className="px-4 py-3 font-medium text-foreground">{item.itemName}</td>
                         <td className="px-4 py-3 text-center">{item.quantity}</td>
-                        <td className="px-4 py-3 text-right text-muted-foreground">${Number(item.unitPrice).toFixed(2)}</td>
-                        <td className="px-4 py-3 text-right font-semibold text-foreground">${Number(item.lineTotal).toFixed(2)}</td>
+                        <td className="px-4 py-3 text-right text-muted-foreground">₹{Number(item.unitPrice).toFixed(2)}</td>
+                        <td className="px-4 py-3 text-right font-semibold text-foreground">₹{Number(item.lineTotal).toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -272,35 +272,35 @@ export function BillingModal({ sessionId, onClose, onSuccess }: BillingModalProp
               <div className="space-y-1.5 border-t border-border pt-3 text-sm">
                 <div className="flex justify-between text-muted-foreground">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
                 </div>
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
                     <span>Discount</span>
-                    <span>-${discountAmount.toFixed(2)}</span>
+                    <span>-₹{discountAmount.toFixed(2)}</span>
                   </div>
                 )}
                 {taxAmount > 0 && (
                   <div className="flex justify-between text-muted-foreground">
                     <span>Tax / GST ({taxPercent}%)</span>
-                    <span>+${taxAmount.toFixed(2)}</span>
+                    <span>+₹{taxAmount.toFixed(2)}</span>
                   </div>
                 )}
                 {serviceCharge > 0 && (
                   <div className="flex justify-between text-muted-foreground">
                     <span>Service Charge ({serviceChargePercent}%)</span>
-                    <span>+${serviceCharge.toFixed(2)}</span>
+                    <span>+₹{serviceCharge.toFixed(2)}</span>
                   </div>
                 )}
                 {roundOff !== 0 && (
                   <div className="flex justify-between text-xs text-muted-foreground/70">
                     <span>Round Off</span>
-                    <span>{roundOff > 0 ? `+${roundOff.toFixed(2)}` : roundOff.toFixed(2)}</span>
+                    <span>{roundOff > 0 ? `+₹${roundOff.toFixed(2)}` : `-₹${Math.abs(roundOff).toFixed(2)}`}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-base font-bold text-foreground border-t border-border pt-2">
                   <span>Grand Total</span>
-                  <span className="text-primary text-lg">${grandTotal.toFixed(2)}</span>
+                  <span className="text-primary text-lg">₹{grandTotal.toFixed(2)}</span>
                 </div>
               </div>
 

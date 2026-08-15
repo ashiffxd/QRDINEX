@@ -12,6 +12,7 @@ interface RestaurantProfileFormProps {
     city: string
     phone?: string | null
     email?: string | null
+    sessionMode: 'OPEN' | 'APPROVAL'
   }
 }
 
@@ -24,6 +25,7 @@ export function RestaurantProfileForm({ initialData }: RestaurantProfileFormProp
     city: initialData.city || '',
     phone: initialData.phone || '',
     email: initialData.email || '',
+    sessionMode: initialData.sessionMode || 'APPROVAL',
   })
 
   const [isSaving, setIsSaving] = useState(false)
@@ -109,7 +111,71 @@ export function RestaurantProfileForm({ initialData }: RestaurantProfileFormProp
           />
         </div>
 
-        <div className="sm:col-span-2">
+        {/* ── Table Session Mode Selection (New Feature) ── */}
+        <div className="sm:col-span-2 border-t border-border/60 pt-6">
+          <label className="block text-sm font-semibold text-foreground">
+            Table Session Mode
+          </label>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Configure how customers access the menu after scanning table QR codes.
+          </p>
+
+          <div className="mt-3 grid gap-4 sm:grid-cols-2">
+            {/* Approval Required card */}
+            <div
+              onClick={() => setFormData({ ...formData, sessionMode: 'APPROVAL' })}
+              className={`cursor-pointer rounded-xl border p-4 transition-all hover:bg-muted/50 ${
+                formData.sessionMode === 'APPROVAL'
+                  ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                  : 'border-border bg-background'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px] ${
+                    formData.sessionMode === 'APPROVAL'
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-muted-foreground/30 bg-background'
+                  }`}
+                >
+                  {formData.sessionMode === 'APPROVAL' && '✓'}
+                </span>
+                <span className="text-sm font-bold text-foreground">Approval Required</span>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+                Staff must approve new sessions from the Live Table Monitor. Recommended to prevent remote/false orders.
+              </p>
+            </div>
+
+            {/* Open Access card */}
+            <div
+              onClick={() => setFormData({ ...formData, sessionMode: 'OPEN' })}
+              className={`cursor-pointer rounded-xl border p-4 transition-all hover:bg-muted/50 ${
+                formData.sessionMode === 'OPEN'
+                  ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                  : 'border-border bg-background'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px] ${
+                    formData.sessionMode === 'OPEN'
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-muted-foreground/30 bg-background'
+                  }`}
+                >
+                  {formData.sessionMode === 'OPEN' && '✓'}
+                </span>
+                <span className="text-sm font-bold text-foreground">Open Access</span>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+                Customers scan and access the menu immediately. Faster entry, but vulnerable if QR codes are shared outside.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="sm:col-span-2 border-t border-border/60 pt-6">
           <label className="block text-sm font-semibold text-foreground">Logo URL</label>
           <input
             type="url"

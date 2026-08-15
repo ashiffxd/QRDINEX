@@ -62,7 +62,7 @@ export function CustomerOrdersClient({ initialOrders, initialSessionStatus }: Cu
         </div>
         <div className="text-right">
           <p className="text-xs text-muted-foreground">Session Total</p>
-          <p className="text-lg font-bold text-primary">${totalSpent.toFixed(2)}</p>
+          <p className="text-lg font-bold text-primary">₹{totalSpent.toFixed(2)}</p>
         </div>
       </div>
 
@@ -115,17 +115,17 @@ export function CustomerOrdersClient({ initialOrders, initialSessionStatus }: Cu
                         </span>
                         <div>
                           <p className="font-medium leading-tight text-foreground">{item.menuItem.itemName}</p>
-                          <p className="text-xs text-muted-foreground">${Number(item.priceAtPurchase).toFixed(2)} each</p>
+                          <p className="text-xs text-muted-foreground">₹{Number(item.priceAtPurchase).toFixed(2)} each</p>
                         </div>
                       </div>
-                      <p className="font-semibold text-foreground">${Number(item.subtotal).toFixed(2)}</p>
+                      <p className="font-semibold text-foreground">₹{Number(item.subtotal).toFixed(2)}</p>
                     </li>
                   ))}
                 </ul>
                 
                 <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
                   <span className="text-sm font-medium text-muted-foreground">Order Total</span>
-                  <span className="font-bold text-foreground">${Number(order.totalAmount).toFixed(2)}</span>
+                  <span className="font-bold text-foreground">₹{Number(order.totalAmount).toFixed(2)}</span>
                 </div>
               </div>
             </div>

@@ -123,17 +123,17 @@ export function OrderDetailsModal({ orderId, onClose, onUpdate }: OrderDetailsMo
                         {item.menuItem.itemName}
                         <span className={`inline-block h-1.5 w-1.5 rounded-full ${item.menuItem.isVeg ? 'bg-green-600' : 'bg-red-600'}`} />
                       </p>
-                      <p className="text-xs text-muted-foreground">${item.priceAtPurchase.toFixed(2)} each</p>
+                      <p className="text-xs text-muted-foreground">₹{item.priceAtPurchase.toFixed(2)} each</p>
                     </div>
                   </div>
-                  <p className="font-bold text-foreground">${item.subtotal.toFixed(2)}</p>
+                  <p className="font-bold text-foreground">₹{item.subtotal.toFixed(2)}</p>
                 </li>
               ))}
             </ul>
 
             <div className="mt-8 border-t border-border pt-4 flex justify-between items-center text-lg font-bold">
               <span>Grand Total</span>
-              <span className="text-primary">${order.totalAmount.toFixed(2)}</span>
+              <span className="text-primary">₹{order.totalAmount.toFixed(2)}</span>
             </div>
 
             {/* Action Bar */}

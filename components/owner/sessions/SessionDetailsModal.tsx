@@ -152,7 +152,7 @@ export function SessionDetailsModal({ sessionId, onClose, onUpdate, onOpenBillin
               </div>
               <div className="text-right">
                 <p className="text-sm font-medium text-muted-foreground">Grand Total</p>
-                <p className="text-2xl font-bold text-primary">${session.totalAmount.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-primary">₹{session.totalAmount.toFixed(2)}</p>
               </div>
             </div>
 
@@ -182,12 +182,12 @@ export function SessionDetailsModal({ sessionId, onClose, onUpdate, onOpenBillin
                             <span className="text-muted-foreground">{item.quantity}x</span>
                             <span>{item.menuItem.itemName}</span>
                           </div>
-                          <span className="font-medium">${item.subtotal.toFixed(2)}</span>
+                          <span className="font-medium">₹{item.subtotal.toFixed(2)}</span>
                         </li>
                       ))}
                     </ul>
                     <div className="mt-3 text-right font-bold text-sm">
-                      Total: ${order.totalAmount.toFixed(2)}
+                      Total: ₹{order.totalAmount.toFixed(2)}
                     </div>
                   </div>
                 ))

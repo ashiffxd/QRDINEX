@@ -1,0 +1,26 @@
+name: Keep Render App Awake
+
+on:
+  schedule:
+    # Runs every 10 minutes (cron syntax)
+    # Note: GitHub Actions schedule triggers can sometimes be delayed by a few minutes,
+    # which is perfectly fine for keep-alive pings.
+    - cron: '*/10 * * * *'
+  
+  # Allows you to manually trigger this workflow from the GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    name: Ping Render Server
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Send keep-alive HTTP GET request
+        run: |
+          # Sends a simple HTTP GET request to the /api/ping endpoint.
+          # -f: Fail silently on server errors
+          # -s: Silent mode (don't show progress bar)
+          # -S: Show error if it fails
+          # -v: Verbose output to log response headers
+          curl -f -s -S -v "https://MY_APP.onrender.com/api/ping"

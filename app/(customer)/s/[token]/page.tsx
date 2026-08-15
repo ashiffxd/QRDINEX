@@ -38,15 +38,18 @@ export default async function QrEntryPage({ params }: QrEntryPageProps) {
     return <ErrorState error={result.error!} />
   }
 
-  // Check for an active session
+  // Check for any active dining session on this table
   const activeSession = await prisma.diningSession.findFirst({
     where: {
       tableId: result.data.tableId,
-      status: 'OPEN',
+      status: {
+        in: ['PENDING', 'OPEN', 'BILL_REQUESTED', 'INVOICE_GENERATED'],
+      },
     },
   })
 
   let hasActiveSession = false
+  let isHostPending = false
   let participantStatus: 'NOT_REQUESTED' | 'PENDING' | 'REJECTED' = 'NOT_REQUESTED'
 
   if (activeSession) {
@@ -63,8 +66,13 @@ export default async function QrEntryPage({ params }: QrEntryPageProps) {
 
     if (participant) {
       if (participant.status === 'APPROVED') {
-        // Automatically set cookie if missing, and redirect
-        redirect('/menu')
+        if (activeSession.status === 'PENDING') {
+          // Host is approved, but the dining session itself is waiting for owner approval.
+          isHostPending = true
+        } else {
+          // Automatically redirect to menu
+          redirect('/menu')
+        }
       } else {
         participantStatus = participant.status
       }
@@ -88,10 +96,14 @@ export default async function QrEntryPage({ params }: QrEntryPageProps) {
           Table {result.data.tableNumber}
         </div>
 
-        {hasActiveSession ? (
+        {hasActiveSession && !isHostPending ? (
           <JoinSessionClient token={token} initialStatus={participantStatus} />
         ) : (
-          <StartDiningButton token={token} />
+          <StartDiningButton
+            token={token}
+            initialState={isHostPending ? 'waiting_owner' : 'idle'}
+            initialSessionId={activeSession?.id ?? null}
+          />
         )}
       </div>
     </div>

@@ -167,7 +167,7 @@ export function OrdersDashboardClient() {
                     <td className="whitespace-nowrap px-6 py-4 font-medium">#{order.orderNumber}</td>
                     <td className="whitespace-nowrap px-6 py-4">T-{order.tableNumber}</td>
                     <td className="whitespace-nowrap px-6 py-4">{order.itemsCount} items</td>
-                    <td className="whitespace-nowrap px-6 py-4 font-semibold">${order.totalAmount.toFixed(2)}</td>
+                    <td className="whitespace-nowrap px-6 py-4 font-semibold">₹{order.totalAmount.toFixed(2)}</td>
                     <td className="whitespace-nowrap px-6 py-4 text-muted-foreground">
                       {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </td>

@@ -9,6 +9,8 @@ import { FloatingCartButton } from '@/components/customer/cart/FloatingCartButto
 import { UtensilsCrossed, AlertTriangle, Receipt } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { getOrSetDeviceId } from '@/lib/auth/device'
+import prisma from '@/lib/prisma'
 
 export const metadata: Metadata = {
   title: 'Menu — QRDineX',
@@ -29,6 +31,23 @@ export default async function CustomerMenuPage() {
   if (!session) {
     return (
       <ErrorState message="Your session has expired or is invalid. Please scan the QR code at your table again." />
+    )
+  }
+
+  // Double check device is an APPROVED participant
+  const deviceId = await getOrSetDeviceId()
+  const participant = await prisma.sessionParticipant.findUnique({
+    where: {
+      sessionId_deviceIdentifier: {
+        sessionId: session.id,
+        deviceIdentifier: deviceId,
+      },
+    },
+  })
+
+  if (!participant || participant.status !== 'APPROVED') {
+    return (
+      <ErrorState message="You are not authorized to view this menu. Please scan the table QR code and request to join." />
     )
   }
 

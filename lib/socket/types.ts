@@ -73,12 +73,38 @@ export interface ParticipantJoinRequestPayload {
   sessionId: string
   participantId: string
   tableNumber: number
+  /** Display name entered by the joining guest (Option B). */
+  displayName: string
 }
 
 export interface ParticipantActionResolvedPayload {
   sessionId: string
   participantId: string
   newStatus: 'APPROVED' | 'REJECTED'
+}
+
+// ============================================================
+// SESSION APPROVAL PAYLOADS (APPROVAL mode)
+// ============================================================
+
+/** Emitted to the owner when a customer creates a PENDING session. */
+export interface SessionPendingApprovalPayload {
+  sessionId: string
+  tableId: string
+  tableNumber: number
+  /** ISO 8601 string */
+  createdAt: string
+}
+
+/** Emitted to the customer's session room when the owner approves. */
+export interface SessionOwnerApprovedPayload {
+  sessionId: string
+  sessionToken: string
+}
+
+/** Emitted to the customer's session room when the owner rejects. */
+export interface SessionOwnerRejectedPayload {
+  sessionId: string
 }
 
 // ============================================================
@@ -125,6 +151,8 @@ export interface OwnerServerToClientEvents {
   'session:new': (payload: SessionNewPayload) => void
   'session:bill_requested': (payload: SessionBillRequestedPayload) => void
   'session:closed': (payload: SessionClosedPayload) => void
+  /** APPROVAL mode — new pending session requires owner action */
+  'session:pending_approval': (payload: SessionPendingApprovalPayload) => void
   'participant:join_request': (payload: ParticipantJoinRequestPayload) => void
   'participant:action_resolved': (payload: ParticipantActionResolvedPayload) => void
   'invoice:generated': (payload: InvoiceGeneratedPayload) => void
@@ -163,6 +191,10 @@ export interface CustomerServerToClientEvents {
   'cart:updated': (payload: CartUpdatedPayload) => void
   'session:bill_requested': (payload: SessionBillRequestedPayload) => void
   'session:closed': (payload: SessionClosedPayload) => void
+  /** APPROVAL mode — owner approved this session; customer can enter menu */
+  'session:owner_approved': (payload: SessionOwnerApprovedPayload) => void
+  /** APPROVAL mode — owner rejected this session */
+  'session:owner_rejected': (payload: SessionOwnerRejectedPayload) => void
   'order:new': (payload: OrderNewPayload) => void
   'order:status_updated': (payload: OrderStatusUpdatedPayload) => void
   'invoice:generated': (payload: InvoiceGeneratedPayload) => void

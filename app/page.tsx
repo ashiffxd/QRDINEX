@@ -6,7 +6,7 @@ import {
   ArrowRight, Utensils, QrCode, LineChart, ShieldCheck,
   ChefHat, Boxes, Wifi, ScanLine, ClipboardList, Bell,
   Sun, Moon, Check, X, Star, Calculator, HelpCircle,
-  TrendingUp, Users, DollarSign, Sparkles, ChevronDown, Zap
+  TrendingUp, Users, IndianRupee, Sparkles, ChevronDown, Zap
   , ChevronLeft, ChevronRight , Smartphone
 } from 'lucide-react'
 
@@ -140,7 +140,7 @@ function ThemeToggle() {
 const metrics = [
   { value: '+35%', label: 'Faster Table Turnover', icon: TrendingUp },
   { value: '150k+', label: 'Orders Processed Monthly', icon: Users },
-  { value: '$0', label: 'Paper Reprinting Costs', icon: DollarSign },
+  { value: '₹0', label: 'Paper Reprinting Costs', icon: IndianRupee },
   { value: '99.9%', label: 'Guaranteed System Uptime', icon: Zap },
 ]
 

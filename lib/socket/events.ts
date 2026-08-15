@@ -40,6 +40,24 @@ export const SESSION_EVENTS = {
 
   /** Owner closed the session — notifies customers in the session */
   CLOSED: 'session:closed',
+
+  /**
+   * APPROVAL mode — a customer scanned the QR and created a PENDING session.
+   * Emitted to the owner's restaurant room so the Table Panel shows the request.
+   */
+  PENDING_APPROVAL: 'session:pending_approval',
+
+  /**
+   * APPROVAL mode — owner approved a PENDING session.
+   * Emitted to the customer session room so the waiting screen unlocks.
+   */
+  OWNER_APPROVED: 'session:owner_approved',
+
+  /**
+   * APPROVAL mode — owner rejected a PENDING session.
+   * Emitted to the customer session room.
+   */
+  OWNER_REJECTED: 'session:owner_rejected',
 } as const
 
 // ============================================================
@@ -49,10 +67,16 @@ export const SESSION_EVENTS = {
 // ============================================================
 
 export const PARTICIPANT_EVENTS = {
-  /** A second device requested to join an existing session */
+  /**
+   * Person B sent a join request to an existing session.
+   * Emitted to the customer session room so the HOST's screen shows the request.
+   */
   JOIN_REQUEST: 'participant:join_request',
 
-  /** Owner approved or rejected a participant join request */
+  /**
+   * HOST approved or rejected Person B's join request.
+   * Emitted to the customer session room — Person B listens for their participantId.
+   */
   ACTION_RESOLVED: 'participant:action_resolved',
 } as const
 
@@ -88,6 +112,7 @@ export type OwnerEventName =
   | (typeof ORDER_EVENTS)[keyof typeof ORDER_EVENTS]
   | typeof SESSION_EVENTS.NEW
   | typeof SESSION_EVENTS.BILL_REQUESTED
+  | typeof SESSION_EVENTS.PENDING_APPROVAL
   | typeof PARTICIPANT_EVENTS.JOIN_REQUEST
   | (typeof INVOICE_EVENTS)[keyof typeof INVOICE_EVENTS]
 
@@ -97,6 +122,8 @@ export type CustomerEventName =
   | typeof CART_EVENTS.UPDATED
   | typeof SESSION_EVENTS.BILL_REQUESTED
   | typeof SESSION_EVENTS.CLOSED
+  | typeof SESSION_EVENTS.OWNER_APPROVED
+  | typeof SESSION_EVENTS.OWNER_REJECTED
   | typeof ORDER_EVENTS.NEW
   | typeof ORDER_EVENTS.STATUS_UPDATED
   | (typeof INVOICE_EVENTS)[keyof typeof INVOICE_EVENTS]

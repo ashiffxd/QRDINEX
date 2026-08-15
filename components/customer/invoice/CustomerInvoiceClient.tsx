@@ -262,12 +262,12 @@ export function CustomerInvoiceClient({
                       <div>
                         <p className="font-medium leading-snug text-foreground">{item.itemName}</p>
                         <p className="text-xs text-muted-foreground">
-                          ${item.unitPrice.toFixed(2)} each
+                          ₹{item.unitPrice.toFixed(2)} each
                         </p>
                       </div>
                     </div>
                     <span className="font-semibold text-foreground">
-                      ${item.lineTotal.toFixed(2)}
+                      ₹{item.lineTotal.toFixed(2)}
                     </span>
                   </div>
                 ))}
@@ -277,40 +277,40 @@ export function CustomerInvoiceClient({
               <div className="mt-6 border-t border-border pt-4 space-y-2 text-sm">
                 <div className="flex justify-between text-muted-foreground">
                   <span>Subtotal</span>
-                  <span className="font-medium text-foreground">${invoice.subtotal.toFixed(2)}</span>
+                  <span className="font-medium text-foreground">₹{invoice.subtotal.toFixed(2)}</span>
                 </div>
 
                 {invoice.discountAmount > 0 && (
                   <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
                     <span>Discount</span>
-                    <span className="font-medium">-${invoice.discountAmount.toFixed(2)}</span>
+                    <span className="font-medium">-₹{invoice.discountAmount.toFixed(2)}</span>
                   </div>
                 )}
 
                 {invoice.taxAmount > 0 && (
                   <div className="flex justify-between text-muted-foreground">
                     <span>Tax</span>
-                    <span className="font-medium text-foreground">${invoice.taxAmount.toFixed(2)}</span>
+                    <span className="font-medium text-foreground">₹{invoice.taxAmount.toFixed(2)}</span>
                   </div>
                 )}
 
                 {invoice.serviceCharge > 0 && (
                   <div className="flex justify-between text-muted-foreground">
                     <span>Service Charge</span>
-                    <span className="font-medium text-foreground">${invoice.serviceCharge.toFixed(2)}</span>
+                    <span className="font-medium text-foreground">₹{invoice.serviceCharge.toFixed(2)}</span>
                   </div>
                 )}
 
                 {invoice.roundOff !== 0 && (
                   <div className="flex justify-between text-muted-foreground text-xs">
                     <span>Round Off</span>
-                    <span>${invoice.roundOff > 0 ? `+${invoice.roundOff.toFixed(2)}` : invoice.roundOff.toFixed(2)}</span>
+                    <span>{invoice.roundOff > 0 ? `+₹${invoice.roundOff.toFixed(2)}` : `-₹${Math.abs(invoice.roundOff).toFixed(2)}`}</span>
                   </div>
                 )}
 
                 <div className="flex justify-between border-t border-border pt-3 text-base font-bold text-foreground">
                   <span>Grand Total</span>
-                  <span className="text-lg text-primary">${invoice.grandTotal.toFixed(2)}</span>
+                  <span className="text-lg text-primary">₹{invoice.grandTotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>

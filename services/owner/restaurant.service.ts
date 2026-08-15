@@ -8,6 +8,7 @@ export interface UpdateRestaurantProfileInput {
   city?: string
   phone?: string | null
   email?: string | null
+  sessionMode?: 'OPEN' | 'APPROVAL'
 }
 
 export interface UpdateBillingSettingsInput {
@@ -36,6 +37,7 @@ export async function getRestaurantProfile(restaurantId: string) {
       serviceChargeEnabled: true,
       serviceChargePercent: true,
       currency: true,
+      sessionMode: true,
     },
   })
 
@@ -56,7 +58,7 @@ export async function updateRestaurantProfile(
   restaurantId: string,
   input: UpdateRestaurantProfileInput
 ) {
-  const { restaurantName, logoUrl, description, address, city, phone, email } = input
+  const { restaurantName, logoUrl, description, address, city, phone, email, sessionMode } = input
 
   if (restaurantName !== undefined && !restaurantName.trim()) {
     throw new Error('INVALID_RESTAURANT_NAME')
@@ -72,6 +74,7 @@ export async function updateRestaurantProfile(
       ...(city !== undefined ? { city: city.trim() } : {}),
       ...(phone !== undefined ? { phone: phone ? phone.trim() : null } : {}),
       ...(email !== undefined ? { email: email ? email.trim().toLowerCase() : null } : {}),
+      ...(sessionMode !== undefined ? { sessionMode } : {}),
     },
     select: {
       id: true,
@@ -87,6 +90,7 @@ export async function updateRestaurantProfile(
       serviceChargeEnabled: true,
       serviceChargePercent: true,
       currency: true,
+      sessionMode: true,
     },
   })
 
