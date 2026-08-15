@@ -23,4 +23,4 @@ jobs:
           # -s: Silent mode (don't show progress bar)
           # -S: Show error if it fails
           # -v: Verbose output to log response headers
-          curl -f -s -S -v "https://MY_APP.onrender.com/api/ping"
+          curl -f -s -S -v "https"//qrdinex.onrender.com/api/ping"
