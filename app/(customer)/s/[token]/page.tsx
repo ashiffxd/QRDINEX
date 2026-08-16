@@ -51,6 +51,7 @@ export default async function QrEntryPage({ params }: QrEntryPageProps) {
   let hasActiveSession = false
   let isHostPending = false
   let participantStatus: 'NOT_REQUESTED' | 'PENDING' | 'REJECTED' = 'NOT_REQUESTED'
+  let participantId: string | undefined = undefined
 
   if (activeSession) {
     hasActiveSession = true
@@ -65,6 +66,7 @@ export default async function QrEntryPage({ params }: QrEntryPageProps) {
     })
 
     if (participant) {
+      participantId = participant.id
       if (participant.status === 'APPROVED') {
         if (activeSession.status === 'PENDING') {
           // Host is approved, but the dining session itself is waiting for owner approval.
@@ -100,7 +102,7 @@ export default async function QrEntryPage({ params }: QrEntryPageProps) {
           <JoinSessionClient
             token={token}
             initialStatus={participantStatus}
-            initialParticipantId={participant?.id}
+            initialParticipantId={participantId}
           />
         ) : (
           <StartDiningButton
