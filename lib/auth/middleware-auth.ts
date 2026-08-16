@@ -28,18 +28,51 @@ export async function validateOwnerRestaurant(
   restaurantId: string,
   origin: string,
 ): Promise<RestaurantValidationResult> {
-  try {
-    const res = await fetch(`${origin}/api/restaurant-status?id=${restaurantId}`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    })
+  const localPort = process.env.PORT || '3000'
+  const urls: string[] = []
 
-    if (!res.ok) {
-      return { valid: false, reason: 'db_error' }
+  // If we are in production, try local loopback first to avoid Render public routing issues
+  if (!origin.includes('localhost') && !origin.includes('127.0.0.1')) {
+    urls.push(`http://127.0.0.1:${localPort}/api/restaurant-status?id=${restaurantId}`)
+    urls.push(`http://localhost:${localPort}/api/restaurant-status?id=${restaurantId}`)
+  }
+  urls.push(`${origin}/api/restaurant-status?id=${restaurantId}`)
+
+  let res: Response | null = null
+  let lastError: any = null
+
+  for (const url of urls) {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 3000)
+    try {
+      console.log(`[Middleware] Validating restaurant via URL: ${url}`)
+      res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+        signal: controller.signal,
+      })
+      clearTimeout(timeoutId)
+      
+      if (res.ok) {
+        break
+      } else {
+        console.warn(`[Middleware] Fetch to ${url} failed with status: ${res.status}`)
+      }
+    } catch (error: any) {
+      clearTimeout(timeoutId)
+      lastError = error
+      console.warn(`[Middleware] Fetch to ${url} threw error:`, error.message || error)
     }
+  }
 
+  if (!res || !res.ok) {
+    console.error('[Middleware] All validation fetch attempts failed.', lastError)
+    return { valid: false, reason: 'db_error' }
+  }
+
+  try {
     const data = await res.json()
     if (!data.success) {
       if (data.reason === 'not_found') {
@@ -54,7 +87,7 @@ export async function validateOwnerRestaurant(
 
     return { valid: true }
   } catch (error) {
-    console.error('[Middleware] Restaurant validation fetch error:', error)
+    console.error('[Middleware] Failed to parse restaurant validation response:', error)
     return { valid: false, reason: 'db_error' }
   }
 }
