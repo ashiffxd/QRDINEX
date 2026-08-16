@@ -173,7 +173,6 @@ export async function middleware(request: NextRequest) {
   // Forward the user's identity in request headers so Server Components can
   // read it without re-verifying the JWT on every render.
   // -------------------------------------------------------------------------
-  const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-user-id', session.userId)
   requestHeaders.set('x-user-role', session.role)
   requestHeaders.set('x-user-name', session.name)
