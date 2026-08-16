@@ -19,7 +19,7 @@ import {
   SESSION_EVENTS,
   PARTICIPANT_EVENTS,
 } from '@/lib/socket/events'
-import type { OwnerDashboardStats } from '@/services/owner/dashboard.service'
+import type { OwnerDashboardStats, DashboardActivity } from '@/services/owner/dashboard.service'
 
 interface OverviewDashboardClientProps {
   initialStats: OwnerDashboardStats
@@ -120,19 +120,40 @@ export function OverviewDashboardClient({ initialStats }: OverviewDashboardClien
         {/* ------------------------------------------------------------------ */}
         {/* RECENT ACTIVITY                                                    */}
         {/* ------------------------------------------------------------------ */}
-        <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm flex flex-col">
-          <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-5 py-4">
+        <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm flex flex-col h-[320px]">
+          <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-5 py-4 shrink-0">
             <Activity className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">Recent Activity</h2>
           </div>
-          <div className="flex flex-1 flex-col items-center justify-center p-8 text-center text-sm text-muted-foreground">
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted/50">
-              <Clock className="h-6 w-6 text-muted-foreground/70" />
-            </div>
-            <p className="font-medium text-foreground">Live Operations Feed Active</p>
-            <p className="mt-1 max-w-sm">
-              Real-time socket events automatically synchronize metrics across your dashboards.
-            </p>
+          <div className="flex-1 overflow-y-auto divide-y divide-border/60">
+            {!stats.activities || stats.activities.length === 0 ? (
+              <div className="flex h-full flex-col items-center justify-center p-8 text-center text-sm text-muted-foreground">
+                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted/50">
+                  <Clock className="h-6 w-6 text-muted-foreground/70" />
+                </div>
+                <p className="font-medium text-foreground">No recent activity</p>
+                <p className="mt-1 max-w-xs mx-auto">
+                  Operations feed will populate as customers scan QR codes and place orders.
+                </p>
+              </div>
+            ) : (
+              stats.activities.map((activity) => (
+                <div key={activity.id} className="flex items-start gap-3 p-4 hover:bg-muted/10 transition-colors">
+                  <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+                    activity.type === 'ORDER' ? 'bg-amber-500/10 text-amber-500' : 'bg-blue-500/10 text-blue-500'
+                  }`}>
+                    <Clock className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">{activity.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{activity.desc}</p>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                    {new Date(activity.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </section>
       </div>
