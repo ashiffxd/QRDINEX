@@ -217,6 +217,7 @@ export interface CustomerSocketData {
   sessionId: string
   restaurantId: string
   deviceId: string
+  status?: string
 }
 
 // ============================================================

@@ -6,7 +6,7 @@ import { OrderDetailsModal } from './OrderDetailsModal'
 import { useOwnerSocket } from '@/hooks/useOwnerSocket'
 import { ORDER_EVENTS } from '@/lib/socket/events'
 
-const STATUS_TABS = ['ALL', 'PLACED', 'ACCEPTED', 'PREPARING', 'READY', 'SERVED', 'CANCELLED']
+const STATUS_TABS = ['ALL', 'PLACED', 'ACCEPTED', 'PREPARING', 'READY', 'SERVED', 'COMPLETED', 'CANCELLED']
 
 export function OrdersDashboardClient() {
   const [orders, setOrders] = useState<any[]>([])

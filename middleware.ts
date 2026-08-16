@@ -26,7 +26,7 @@
  * ==========================================================================
  */
 
-export const runtime = 'nodejs'
+
 
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
@@ -98,7 +98,7 @@ export async function middleware(request: NextRequest) {
       return redirectToLoginAndClearCookie(request)
     }
 
-    const restaurantCheck = await validateOwnerRestaurant(session.restaurantId)
+    const restaurantCheck = await validateOwnerRestaurant(session.restaurantId, request.nextUrl.origin)
 
     if (!restaurantCheck.valid) {
       // Restaurant inactive, deleted, or DB error — clear cookie and redirect.

@@ -99,6 +99,7 @@ export function setupCustomerNamespace(io: Server): void {
       })
 
       const allowedStatuses: SessionStatus[] = [
+        SessionStatus.PENDING, // Allow pending status so customers waiting for owner/host approval can connect
         SessionStatus.OPEN,
         SessionStatus.BILL_REQUESTED,
         SessionStatus.INVOICE_GENERATED,
@@ -111,10 +112,10 @@ export function setupCustomerNamespace(io: Server): void {
         return next(new Error('UNAUTHORIZED: No active dining session'))
       }
 
-      // This device must be an approved participant
+      // This device must be an approved or pending participant
       const participant = session.participants[0]
-      if (!participant || participant.status !== 'APPROVED') {
-        return next(new Error('UNAUTHORIZED: Device not approved for this session'))
+      if (!participant || (participant.status !== 'APPROVED' && participant.status !== 'PENDING')) {
+        return next(new Error('UNAUTHORIZED: Device not approved or pending for this session'))
       }
 
       // Attach session identity to socket.data
@@ -122,6 +123,7 @@ export function setupCustomerNamespace(io: Server): void {
         sessionId: session.id,
         restaurantId: session.restaurantId,
         deviceId,
+        status: participant.status,
       }
 
       return next()

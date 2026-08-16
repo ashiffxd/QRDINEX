@@ -97,7 +97,11 @@ export default async function QrEntryPage({ params }: QrEntryPageProps) {
         </div>
 
         {hasActiveSession && !isHostPending ? (
-          <JoinSessionClient token={token} initialStatus={participantStatus} />
+          <JoinSessionClient
+            token={token}
+            initialStatus={participantStatus}
+            initialParticipantId={participant?.id}
+          />
         ) : (
           <StartDiningButton
             token={token}

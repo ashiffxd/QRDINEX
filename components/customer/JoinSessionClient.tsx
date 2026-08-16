@@ -27,6 +27,7 @@ interface JoinSessionClientProps {
   token: string
   /** Pre-resolved state from server — if the device already has a PENDING/REJECTED record */
   initialStatus?: 'NOT_REQUESTED' | 'PENDING' | 'REJECTED'
+  initialParticipantId?: string
 }
 
 type ViewState = 'name_input' | 'loading' | 'pending' | 'rejected'
@@ -34,6 +35,7 @@ type ViewState = 'name_input' | 'loading' | 'pending' | 'rejected'
 export function JoinSessionClient({
   token,
   initialStatus = 'NOT_REQUESTED',
+  initialParticipantId,
 }: JoinSessionClientProps) {
   const [view, setView] = useState<ViewState>(
     initialStatus === 'PENDING'
@@ -43,7 +45,7 @@ export function JoinSessionClient({
       : 'name_input'
   )
   const [displayName, setDisplayName] = useState('')
-  const [participantId, setParticipantId] = useState<string | null>(null)
+  const [participantId, setParticipantId] = useState<string | null>(initialParticipantId || null)
   const [error, setError] = useState<string | null>(null)
   const socketRef = useRef<Socket | null>(null)
   const router = useRouter()
@@ -54,7 +56,8 @@ export function JoinSessionClient({
 
     const socket: Socket = io('/customer', {
       path: '/socket.io',
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'],
+      withCredentials: true,
     })
     socketRef.current = socket
 

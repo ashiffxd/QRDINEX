@@ -8,6 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { cookies, headers } from 'next/headers'
 import prisma from '@/lib/prisma'
 import { getOrSetDeviceId } from '@/lib/auth/device'
 import { SessionStatus, ParticipantRole } from '@prisma/client'
@@ -93,6 +94,29 @@ export async function POST(request: NextRequest) {
         role: ParticipantRole.GUEST,
         displayName: sanitizedName,
       },
+    })
+
+    // Set the session cookie so the guest's browser has the token for socket auth.
+    // They are blocked from viewing the menu by the status check, but need the socket connection to hear the approval.
+    const cookieStore = await cookies()
+    const headersList = await headers()
+    const host = headersList.get('host') || ''
+    const isLocal =
+      host.includes('localhost') ||
+      host.includes('127.0.0.1') ||
+      host.startsWith('192.168.') ||
+      host.startsWith('10.') ||
+      host.startsWith('172.')
+    const secure = process.env.NODE_ENV === 'production' && !isLocal
+
+    cookieStore.set({
+      name: 'dining_session',
+      value: activeSession.sessionToken,
+      httpOnly: true,
+      path: '/',
+      secure,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 12,
     })
 
     // Emit join request to the session room — the HOST is listening there
