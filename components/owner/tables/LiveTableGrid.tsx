@@ -395,7 +395,7 @@ export function LiveTableGrid() {
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span className="flex items-center gap-1 font-medium">
                         <Users className="h-3.5 w-3.5" />
-                        {approvedGuests.length + 1} Seated
+                        {approvedGuests.length} Seated
                       </span>
                       <span>•</span>
                       <span className="font-medium">

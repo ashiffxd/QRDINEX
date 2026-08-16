@@ -52,11 +52,47 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // -------------------------------------------------------------------------
+  // STEP 0: Manage device ID (qrd_device_id) for all users/guests
+  // -------------------------------------------------------------------------
+  let deviceId = request.cookies.get('qrd_device_id')?.value
+  let deviceIdGenerated = false
+
+  if (!deviceId) {
+    deviceId = crypto.randomUUID()
+    deviceIdGenerated = true
+  }
+
+  const requestHeaders = new Headers(request.headers)
+  if (deviceIdGenerated && deviceId) {
+    let cookieHeader = request.headers.get('cookie') || ''
+    cookieHeader = `${cookieHeader}; qrd_device_id=${deviceId}`.trim()
+    requestHeaders.set('cookie', cookieHeader)
+  }
+
+  const attachDeviceCookie = (res: NextResponse) => {
+    if (deviceIdGenerated && deviceId) {
+      res.cookies.set({
+        name: 'qrd_device_id',
+        value: deviceId,
+        httpOnly: true,
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 365,
+      })
+    }
+    return res
+  }
+
+  // -------------------------------------------------------------------------
   // STEP 1: Public routes — allow unconditionally, no JWT check.
   // Checked first so we never waste time verifying a token for /, /menu/*, etc.
   // -------------------------------------------------------------------------
   if (isPublicRoute(pathname)) {
-    return NextResponse.next()
+    const response = NextResponse.next({
+      request: { headers: requestHeaders },
+    })
+    return attachDeviceCookie(response)
   }
 
   // -------------------------------------------------------------------------
@@ -145,9 +181,10 @@ export async function middleware(request: NextRequest) {
     requestHeaders.set('x-restaurant-id', session.restaurantId)
   }
 
-  return NextResponse.next({
+  const response = NextResponse.next({
     request: { headers: requestHeaders },
   })
+  return attachDeviceCookie(response)
 }
 
 // ---------------------------------------------------------------------------

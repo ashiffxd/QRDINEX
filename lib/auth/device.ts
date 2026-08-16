@@ -22,16 +22,20 @@ export async function getOrSetDeviceId(): Promise<string> {
     const isLocal = host.includes('localhost') || host.includes('127.0.0.1') || host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.')
     const secure = process.env.NODE_ENV === 'production' && !isLocal
 
-    cookieStore.set({
-      name: DEVICE_COOKIE_NAME,
-      value: deviceId,
-      httpOnly: true,
-      path: '/',
-      secure,
-      sameSite: 'lax',
-      // Very long expiration - identifies the physical browser
-      maxAge: 60 * 60 * 24 * 365, 
-    })
+    try {
+      cookieStore.set({
+        name: DEVICE_COOKIE_NAME,
+        value: deviceId,
+        httpOnly: true,
+        path: '/',
+        secure,
+        sameSite: 'lax',
+        // Very long expiration - identifies the physical browser
+        maxAge: 60 * 60 * 24 * 365, 
+      })
+    } catch (e) {
+      console.warn('[getOrSetDeviceId] Failed to set cookie (expected in Server Components):', e)
+    }
   }
 
   return deviceId
