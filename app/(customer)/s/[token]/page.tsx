@@ -84,6 +84,11 @@ export default async function QrEntryPage({ params }: QrEntryPageProps) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-6 text-center">
       <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-sm">
+        {/* Platform Branding */}
+        <div className="mb-6 flex items-center justify-center gap-1 text-[11px] font-bold tracking-widest text-muted-foreground/40 uppercase">
+          QRDineX
+        </div>
+
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
           <UtensilsCrossed className="h-8 w-8 text-primary" />
         </div>
@@ -160,6 +165,11 @@ function ErrorState({ error }: { error: QRErrorType }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-6 text-center">
       <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-sm">
+        {/* Platform Branding */}
+        <div className="mb-6 flex items-center justify-center gap-1 text-[11px] font-bold tracking-widest text-muted-foreground/40 uppercase">
+          QRDineX
+        </div>
+
         <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${iconBgClass}`}>
           <Icon className={`h-8 w-8 ${iconColorClass}`} />
         </div>

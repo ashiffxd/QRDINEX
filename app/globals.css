@@ -71,7 +71,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-[#050505] font-sans text-slate-100 antialiased selection:bg-[#00D6FF]/30 selection:text-[#00D6FF];
+    @apply bg-background font-sans text-foreground antialiased selection:bg-[#00D6FF]/30 selection:text-[#00D6FF];
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-display tracking-tight;

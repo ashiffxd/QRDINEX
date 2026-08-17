@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react'
+import { useOwnerSocket } from '@/hooks/useOwnerSocket'
 import { 
   LayoutDashboard, 
   UtensilsCrossed, 
@@ -25,6 +27,57 @@ interface OwnerSidebarProps {
 export function OwnerSidebar({ onClose }: OwnerSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
+
+  const [counts, setCounts] = useState({
+    pendingSessions: 0,
+    newOrders: 0,
+    pendingGuests: 0,
+  })
+
+  const { on } = useOwnerSocket()
+
+  const fetchCounts = useCallback(async () => {
+    try {
+      const res = await fetch('/api/owner/notifications')
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) {
+          setCounts({
+            pendingSessions: data.pendingSessions || 0,
+            newOrders: data.newOrders || 0,
+            pendingGuests: data.pendingGuests || 0,
+          })
+        }
+      }
+    } catch (e) {
+      console.error('[OwnerSidebar] Error fetching notifications:', e)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchCounts()
+  }, [fetchCounts])
+
+  useEffect(() => {
+    // Refresh badge counts in real-time when operation events occur
+    const unsubOrderNew = on('order:new', fetchCounts)
+    const unsubOrderStatus = on('order:status_updated', fetchCounts)
+    const unsubSessionNew = on('session:new', fetchCounts)
+    const unsubSessionPending = on('session:pending_approval', fetchCounts)
+    const unsubSessionClosed = on('session:closed', fetchCounts)
+    const unsubJoinReq = on('participant:join_request', fetchCounts)
+    const unsubActionRes = on('participant:action_resolved', fetchCounts)
+
+    return () => {
+      unsubOrderNew()
+      unsubOrderStatus()
+      unsubSessionNew()
+      unsubSessionPending()
+      unsubSessionClosed()
+      unsubJoinReq()
+      unsubActionRes()
+    }
+  }, [on, fetchCounts])
 
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -85,19 +138,39 @@ export function OwnerSidebar({ onClose }: OwnerSidebarProps) {
               <ul className="space-y-1">
                 {group.items.map((item) => {
                   const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
+                  
+                  // Determine notification badge values
+                  let badgeValue = 0
+                  if (item.name === 'Live Table Monitor') {
+                    badgeValue = counts.pendingSessions + counts.pendingGuests
+                  } else if (item.name === 'Kitchen Display' || item.name === 'Orders') {
+                    badgeValue = counts.newOrders
+                  }
+
                   return (
                     <li key={item.name}>
                       <Link
                         href={item.href}
                         onClick={onClose}
-                        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                        className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                           isActive
                             ? 'bg-primary/10 text-primary'
                             : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                         }`}
                       >
-                        <item.icon className={`h-4 w-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                        {item.name}
+                        <div className="flex items-center gap-3">
+                          <item.icon className={`h-4 w-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                          <span>{item.name}</span>
+                        </div>
+                        {badgeValue > 0 && (
+                          <span className={`inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold ${
+                            item.name === 'Live Table Monitor' && counts.pendingSessions > 0
+                              ? 'bg-amber-500 text-white animate-pulse'
+                              : 'bg-primary text-primary-foreground'
+                          }`}>
+                            {badgeValue}
+                          </span>
+                        )}
                       </Link>
                     </li>
                   )
