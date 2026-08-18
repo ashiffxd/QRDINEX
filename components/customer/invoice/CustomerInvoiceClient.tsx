@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import {
   ArrowLeft,
-  Receipt,
+  IndianRupee,
   CheckCircle2,
   Clock,
   UtensilsCrossed,
@@ -179,9 +179,6 @@ export function CustomerInvoiceClient({
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-md">
             <CheckCircle2 className="h-8 w-8" />
           </div>
-          <h2 className="text-xl font-bold text-emerald-800 dark:text-emerald-300">
-            ✓ Payment Received
-          </h2>
           <p className="mt-1 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
             ✓ Dining Session Completed
           </p>
@@ -196,7 +193,7 @@ export function CustomerInvoiceClient({
       {!hasInvoice && !isSessionCompleted && (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-border/80 bg-card p-8 text-center shadow-sm">
           <div className="relative mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-            <Receipt className="h-10 w-10 text-primary animate-pulse" />
+            <IndianRupee className="h-10 w-10 text-primary animate-pulse" />
             <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
               <Sparkles className="h-3 w-3" />
             </span>

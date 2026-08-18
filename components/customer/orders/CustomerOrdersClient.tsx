@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Clock, Receipt } from 'lucide-react'
+import { ArrowLeft, Clock, IndianRupee } from 'lucide-react'
 import { RequestBillButton } from '@/components/customer/RequestBillButton'
 import { useCustomerSocket } from '@/hooks/useCustomerSocket'
 import { ORDER_EVENTS } from '@/lib/socket/events'
@@ -68,7 +68,7 @@ export function CustomerOrdersClient({ initialOrders, initialSessionStatus }: Cu
 
       {orders.length === 0 ? (
         <div className="flex h-[50vh] flex-col items-center justify-center text-center">
-          <Receipt className="mb-4 h-12 w-12 text-muted-foreground/30" />
+          <IndianRupee className="mb-4 h-12 w-12 text-muted-foreground/30" />
           <h2 className="text-xl font-semibold text-foreground">No orders yet</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             You haven't placed any orders in this session.

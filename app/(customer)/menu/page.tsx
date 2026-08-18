@@ -6,8 +6,7 @@ import { getCustomerMenu } from '@/services/customer/menu.service'
 import { CustomerMenuClient } from '@/components/customer/menu/CustomerMenuClient'
 import { ParticipantsManager } from '@/components/customer/menu/ParticipantsManager'
 import { FloatingCartButton } from '@/components/customer/cart/FloatingCartButton'
-import { UtensilsCrossed, AlertTriangle, Receipt } from 'lucide-react'
-import Image from 'next/image'
+import { UtensilsCrossed, AlertTriangle, IndianRupee } from 'lucide-react'
 import Link from 'next/link'
 import { getOrSetDeviceId } from '@/lib/auth/device'
 import prisma from '@/lib/prisma'
@@ -59,15 +58,9 @@ export default async function CustomerMenuPage() {
       {/* Header */}
       <header className="sticky top-0 z-40 -mx-4 flex items-center justify-between border-b border-border bg-card px-4 py-3 shadow-sm sm:mx-0 sm:px-6">
         <div className="flex items-center gap-3">
-          {restaurant.logoUrl ? (
-            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md border border-border">
-              <Image src={restaurant.logoUrl} alt={restaurant.restaurantName} fill className="object-cover" />
-            </div>
-          ) : (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10">
-              <UtensilsCrossed className="h-5 w-5 text-primary" />
-            </div>
-          )}
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10">
+            <UtensilsCrossed className="h-5 w-5 text-primary" />
+          </div>
           <div className="text-right">
             <h2 className="text-sm font-bold text-foreground">
               {restaurant.restaurantName}
@@ -84,7 +77,7 @@ export default async function CustomerMenuPage() {
             href="/orders"
             className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
           >
-            <Receipt className="h-4 w-4" />
+            <IndianRupee className="h-4 w-4" />
           </Link>
           <ParticipantsManager />
         </div>
