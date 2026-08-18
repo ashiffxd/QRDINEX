@@ -6,7 +6,7 @@ import { AccountProfileForm } from '@/components/owner/settings/AccountProfileFo
 import { User } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'My Profile — QRDineX',
+  title: 'My Profile',
   description: 'View and update your personal account profile and password.',
 }
 

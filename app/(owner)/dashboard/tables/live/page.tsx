@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { LiveTableGrid } from '@/components/owner/tables/LiveTableGrid'
 
 export const metadata: Metadata = {
-  title: 'Live Table Monitor — QRDineX',
+  title: 'Live Table Monitor',
   description: 'Monitor active table sessions, manage guest entries, and accept table scan requests in real-time.',
 }
 

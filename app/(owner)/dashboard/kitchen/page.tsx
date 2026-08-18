@@ -5,7 +5,7 @@ import { getKitchenOrders } from '@/services/owner/order.service'
 import { KitchenDisplayClient } from '@/components/owner/kitchen/KitchenDisplayClient'
 
 export const metadata: Metadata = {
-  title: 'Kitchen Display System (KDS) — QRDineX',
+  title: 'Kitchen Display System (KDS)',
   description: 'Live order queue and preparation board for restaurant chefs.',
 }
 

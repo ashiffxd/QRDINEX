@@ -13,6 +13,7 @@ import Link from 'next/link'
 import { Menu, User, Settings, ChevronDown, Bell } from 'lucide-react'
 import { LogoutButton } from '@/components/account/LogoutButton'
 import { cn } from '@/lib/utils'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 interface AdminTopNavProps {
   /** Admin's full name — passed from the Server layout */
@@ -40,8 +41,8 @@ export function AdminTopNav({ adminName, onMenuClick }: AdminTopNavProps) {
         </span>
       </div>
 
-      {/* Right — notifications + profile */}
       <div className="flex items-center gap-2">
+        <ThemeToggle />
         {/* Notification bell (placeholder — functionality in later phase) */}
         <button
           className="relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"

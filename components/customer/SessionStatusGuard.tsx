@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { useCustomerSocket } from '@/hooks/useCustomerSocket'
 import { SESSION_EVENTS, INVOICE_EVENTS } from '@/lib/socket/events'
 import { AlertTriangle, IndianRupee, CheckCircle2, ChevronRight } from 'lucide-react'
@@ -10,8 +11,26 @@ import { JoinRequestToast } from './JoinRequestToast'
 export function SessionStatusGuard({ children }: { children: React.ReactNode }) {
   const [sessionState, setSessionState] = useState<'ACTIVE' | 'INVOICE_GENERATED' | 'COMPLETED'>('ACTIVE')
   const { on } = useCustomerSocket()
+  const pathname = usePathname()
+  const isReceiptOrOrdersPage = pathname === '/invoice' || pathname === '/orders'
 
   useEffect(() => {
+    // Sync status with database on initial mount
+    fetch('/api/customer/session/status')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.sessionStatus) {
+          if (data.sessionStatus === 'COMPLETED' || data.sessionStatus === 'CLOSED') {
+            setSessionState('COMPLETED')
+          } else if (data.sessionStatus === 'INVOICE_GENERATED') {
+            setSessionState('INVOICE_GENERATED')
+          } else {
+            setSessionState('ACTIVE')
+          }
+        }
+      })
+      .catch((err) => console.error('[SessionStatusGuard] Initial fetch failed:', err))
+
     const unsubClosed = on(SESSION_EVENTS.CLOSED, () => {
       setSessionState('COMPLETED')
     })
@@ -28,6 +47,52 @@ export function SessionStatusGuard({ children }: { children: React.ReactNode }) 
       unsubInvPaid()
     }
   }, [on])
+
+  // Block access to menu/cart if session is closed or invoice is generated
+  if ((sessionState === 'COMPLETED' || sessionState === 'INVOICE_GENERATED') && !isReceiptOrOrdersPage) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-12 text-center">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-lg">
+          <div className="mb-6 flex items-center justify-center gap-1 text-[11px] font-bold tracking-widest text-muted-foreground/40 uppercase">
+            QRDineX
+          </div>
+
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-6">
+            {sessionState === 'COMPLETED' ? (
+              <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+            ) : (
+              <IndianRupee className="h-8 w-8 text-blue-500" />
+            )}
+          </div>
+
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">
+            {sessionState === 'COMPLETED' ? 'Session Completed' : 'Invoice Generated'}
+          </h2>
+
+          <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+            {sessionState === 'COMPLETED'
+              ? 'This dining session has been completed and finalized. Thank you for dining with us!'
+              : 'The restaurant has generated your bill. Please view the invoice to make payment and finalize your session.'}
+          </p>
+
+          <div className="mt-8 flex flex-col gap-3">
+            <Link
+              href="/invoice"
+              className="inline-flex h-11 items-center justify-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 active:scale-95 shadow-md"
+            >
+              {sessionState === 'COMPLETED' ? 'View Final Receipt' : 'View Invoice & Pay'}
+            </Link>
+            <Link
+              href="/orders"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-input bg-background text-sm font-semibold text-foreground transition-all hover:bg-muted active:scale-95"
+            >
+              View Order History
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>

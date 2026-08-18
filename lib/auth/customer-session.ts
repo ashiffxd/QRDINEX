@@ -11,11 +11,13 @@ export interface ValidatedCustomerSession {
 
 /**
  * Validates that the current request comes from an APPROVED participant
- * of an OPEN Dining Session.
+ * of an active/open Dining Session.
  * 
  * Returns the session details if valid, or null if unauthorized.
  */
-export async function validateActiveCustomer(): Promise<ValidatedCustomerSession | null> {
+export async function validateActiveCustomer(
+  options: { allowCompletedOrClosed?: boolean } = { allowCompletedOrClosed: false }
+): Promise<ValidatedCustomerSession | null> {
   const cookieStore = await cookies()
   const sessionToken = cookieStore.get('dining_session')?.value
   const deviceId = await getDeviceId()
@@ -33,15 +35,22 @@ export async function validateActiveCustomer(): Promise<ValidatedCustomerSession
     },
   })
 
+  if (!session) {
+    return null
+  }
+
   const allowedStatuses: SessionStatus[] = [
+    SessionStatus.PENDING,
     SessionStatus.OPEN,
     SessionStatus.BILL_REQUESTED,
     SessionStatus.INVOICE_GENERATED,
-    SessionStatus.COMPLETED,
-    SessionStatus.CLOSED,
   ]
 
-  if (!session || !allowedStatuses.includes(session.status)) {
+  if (options.allowCompletedOrClosed) {
+    allowedStatuses.push(SessionStatus.COMPLETED, SessionStatus.CLOSED)
+  }
+
+  if (!allowedStatuses.includes(session.status)) {
     return null
   }
 

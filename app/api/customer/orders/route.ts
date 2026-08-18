@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const customer = await validateActiveCustomer()
+    const customer = await validateActiveCustomer({ allowCompletedOrClosed: true })
     if (!customer) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
     }

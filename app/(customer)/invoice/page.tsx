@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 }
 
 export default async function CustomerInvoicePage() {
-  const customer = await validateActiveCustomer()
+  const customer = await validateActiveCustomer({ allowCompletedOrClosed: true })
 
   if (!customer) {
     redirect('/menu')

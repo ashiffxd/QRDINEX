@@ -71,3 +71,45 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 })
   }
 }
+
+export async function GET() {
+  try {
+    const cookieStore = await cookies()
+    const sessionToken = cookieStore.get('dining_session')?.value
+    const deviceId = await getDeviceId()
+
+    if (!sessionToken || !deviceId) {
+      return NextResponse.json({ success: true, status: 'NO_SESSION', sessionStatus: null })
+    }
+
+    const session = await prisma.diningSession.findUnique({
+      where: { sessionToken },
+    })
+
+    if (!session) {
+      return NextResponse.json({ success: true, status: 'NO_SESSION', sessionStatus: null })
+    }
+
+    const participant = await prisma.sessionParticipant.findUnique({
+      where: {
+        sessionId_deviceIdentifier: {
+          sessionId: session.id,
+          deviceIdentifier: deviceId,
+        },
+      },
+    })
+
+    if (!participant) {
+      return NextResponse.json({ success: true, status: 'NOT_REQUESTED', sessionStatus: session.status })
+    }
+
+    return NextResponse.json({
+      success: true,
+      status: participant.status,
+      sessionStatus: session.status,
+    })
+  } catch (error) {
+    console.error('[SessionStatus GET] Error:', error)
+    return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 })
+  }
+}

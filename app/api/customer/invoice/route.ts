@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
-    const customer = await validateActiveCustomer()
+    const customer = await validateActiveCustomer({ allowCompletedOrClosed: true })
     if (!customer) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized session' },

@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import { OrdersDashboardClient } from '@/components/owner/orders/OrdersDashboardClient'
 
 export const metadata: Metadata = {
-  title: 'Incoming Orders — QRDineX',
+  title: 'Incoming Orders',
   description: 'Manage and track incoming orders for your restaurant.',
 }
 

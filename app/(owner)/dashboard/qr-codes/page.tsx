@@ -9,7 +9,7 @@ import { Pagination } from '@/components/admin/Pagination'
 import { AlertCircle } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'QR Codes — QRDineX',
+  title: 'QR Codes',
 }
 
 export default async function QrCodesPage({

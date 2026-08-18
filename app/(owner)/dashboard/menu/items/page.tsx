@@ -11,7 +11,7 @@ import { Pagination } from '@/components/admin/Pagination'
 import { AlertCircle } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Menu Items — QRDineX',
+  title: 'Menu Items',
 }
 
 export default async function MenuItemsPage({

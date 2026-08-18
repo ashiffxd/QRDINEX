@@ -195,51 +195,68 @@ const testimonials = [
 // --- Data (Place with your other data constants) -----------------------
 const pricingPlans = [
   {
-    name: 'Starter',
-    desc: 'Perfect for small cafes & pop-up food spots.',
-    monthlyPrice: 299,
-    annualPrice: 239,
+    name: '1 Month Plan',
+    price: 599,
+    subtext: 'Billed monthly',
+    badge: null,
+    cta: 'Get Started',
+    featured: false,
     features: [
-      'Up to 15 Active Tables',
-      'Instant Web QR Menus',
-      'Basic Order Routing',
-      'Daily Revenue Reports',
-      'Email Support',
+      'Unlimited Tables',
+      'QR Menus',
+      'KDS',
+      'Analytics',
+      'Staff Access',
+      '24/7 Support',
     ],
-    cta: 'Start Free Trial',
-    popular: false,
   },
   {
-    name: 'Pro',
-    desc: 'Ideal for busy restaurants, bars & bistros.',
-    monthlyPrice: 599,
-    annualPrice: 479,
-    features: [
-      'Unlimited Active Tables',
-      'Kitchen Display System (KDS)',
-      'Real-Time Menu & 86 Inventory Sync',
-      'Visual Upselling & High-Res Photos',
-      'Multi-Staff Role Access',
-      'Priority 24/7 Support',
-    ],
+    name: '3 Months Plan',
+    price: 499,
+    subtext: 'Billed ₹1,497 every 3 months',
+    badge: 'Save 15%',
     cta: 'Start 14-Day Free Trial',
-    popular: true,
+    featured: false,
+    features: [
+      'Unlimited Tables',
+      'QR Menus',
+      'KDS',
+      'Analytics',
+      'Staff Access',
+      '24/7 Support',
+    ],
   },
   {
-    name: 'Enterprise',
-    desc: 'Designed for multi-location restaurant chains.',
-    monthlyPrice: 999,
-    annualPrice: 799,
+    name: '6 Months Plan',
+    price: 429,
+    subtext: 'Billed ₹2,574 every 6 months',
+    badge: 'Most Popular',
+    cta: 'Start 14-Day Free Trial',
+    featured: true,
     features: [
-      'Multi-Location Central Control',
-      'Custom POS & Printer Integration',
-      'Dedicated Account Manager',
-      'Custom Branding & QR Styling',
-      'Advanced Sales & Inventory Analytics',
-      'SLA & 99.9% Uptime Guarantee',
+      'Unlimited Tables',
+      'QR Menus',
+      'KDS',
+      'Analytics',
+      'Staff Access',
+      '24/7 Support',
     ],
-    cta: 'Contact Sales',
-    popular: false,
+  },
+  {
+    name: '12 Months Plan',
+    price: 349,
+    subtext: 'Billed ₹4,188 annually',
+    badge: 'Best Value (Save 40%)',
+    cta: 'Get 1 Year Access',
+    featured: false,
+    features: [
+      'Unlimited Tables',
+      'QR Menus',
+      'KDS',
+      'Analytics',
+      'Staff Access',
+      '24/7 Support',
+    ],
   },
 ]
 
@@ -272,7 +289,6 @@ export default function LandingPage() {
   const [mounted, setMounted] = useState(false)
   
   // Interactive States
-  const [isAnnual, setIsAnnual] = useState(true)
   const [openFaq, setOpenFaq] = useState<number | null>(0)
 
   // Calculator States
@@ -379,7 +395,7 @@ const nextFeature = () => {
             </h1>
             <div className={`mt-5 flex items-center gap-3 text-[11px] sm:text-sm uppercase tracking-[0.2em] text-sky-400 font-mono ${mounted ? 'hero-in d2' : 'opacity-0'}`}>
               <span className="h-px w-8 bg-white/30" />
-              = Scan · Order · Dine =
+              Skip the Wait, Enjoy the Plate
               <span className="h-px w-8 bg-white/30" />
             </div>
           </div>
@@ -757,6 +773,96 @@ const nextFeature = () => {
   </div>
 </section>
 
+        {/* Snapshots Section */}
+        <section id="snapshots" className="w-full py-16 md:py-24 bg-[#eefcf7] dark:bg-[#0b1c18] transition-colors duration-300 overflow-hidden">
+          <div className="mx-auto max-w-6xl px-4 md:px-6">
+            
+            {/* Header */}
+            <Reveal className="max-w-3xl text-left">
+              <p className="font-mono text-xs sm:text-sm font-semibold uppercase tracking-widest text-teal-600 dark:text-teal-400">
+                Snapshots
+              </p>
+              <h2 className="font-display mt-3 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-white leading-[1.1]">
+                QRDineX <span className="bg-gradient-to-r from-teal-600 via-emerald-500 to-sky-400 bg-clip-text text-transparent">in action</span>
+              </h2>
+              <p className="mt-4 text-base sm:text-lg leading-relaxed text-slate-500 dark:text-slate-400 italic">
+                A visual journey through the modern dining experience powered by our platform.
+              </p>
+            </Reveal>
+
+            {/* Snapshots Grid */}
+            <div className="mt-16 grid gap-12 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
+              
+              {/* Snapshot 1: Family Dining (img-1) */}
+              <Reveal delay={100}>
+                <div className="group flex flex-col justify-between h-full bg-white dark:bg-slate-900/90 rounded-3xl p-6 border border-slate-200/50 dark:border-slate-800/60 shadow-sm hover:shadow-xl transition-all duration-300">
+                  <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border-4 border-white dark:border-slate-800 shadow-lg transform -rotate-2 group-hover:rotate-0 transition-transform duration-500 ease-out">
+                    <img 
+                      src="/images/snapshots/img-1.png" 
+                      alt="Family viewing digital menu together" 
+                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
+                  <div className="mt-8">
+                    <h3 className="font-display text-xl font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors duration-200">
+                      Delightful Dining
+                    </h3>
+                    <p className="mt-3 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                      Families and friends enjoy a fast, interactive ordering experience together, selecting dishes directly from their phones.
+                    </p>
+                  </div>
+                </div>
+              </Reveal>
+
+              {/* Snapshot 2: Scanning QR (img-2) */}
+              <Reveal delay={200}>
+                <div className="group flex flex-col justify-between h-full bg-white dark:bg-slate-900/90 rounded-3xl p-6 border border-slate-200/50 dark:border-slate-800/60 shadow-sm hover:shadow-xl transition-all duration-300">
+                  <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border-4 border-white dark:border-slate-800 shadow-lg transform rotate-2 group-hover:rotate-0 transition-transform duration-500 ease-out">
+                    <img 
+                      src="/images/snapshots/img-2.png" 
+                      alt="Customer scanning table QR code" 
+                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
+                  <div className="mt-8">
+                    <h3 className="font-display text-xl font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors duration-200">
+                      Seamless Scanning
+                    </h3>
+                    <p className="mt-3 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                      Guests scan the unique table QR code to open the digital menu instantly in their mobile browser—no app download required.
+                    </p>
+                  </div>
+                </div>
+              </Reveal>
+
+              {/* Snapshot 3: Staff Interaction (img-3) */}
+              <Reveal delay={300}>
+                <div className="group flex flex-col justify-between h-full bg-white dark:bg-slate-900/90 rounded-3xl p-6 border border-slate-200/50 dark:border-slate-800/60 shadow-sm hover:shadow-xl transition-all duration-300">
+                  <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border-4 border-white dark:border-slate-800 shadow-lg transform -rotate-1 group-hover:rotate-0 transition-transform duration-500 ease-out">
+                    <img 
+                      src="/images/snapshots/img-3.png" 
+                      alt="Staff assisting guests at restaurant table" 
+                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
+                  <div className="mt-8">
+                    <h3 className="font-display text-xl font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors duration-200">
+                      Staff Collaboration
+                    </h3>
+                    <p className="mt-3 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                      Empower your service team to assist guests, coordinate tables, and handle payments smoothly with digital efficiency.
+                    </p>
+                  </div>
+                </div>
+              </Reveal>
+
+            </div>
+          </div>
+        </section>
+
         {/* 3. Comparison Table Section */}
         <section className="w-full py-16 md:py-24 bg-slate-50 dark:bg-slate-900/50 transition-colors duration-300">
   <div className="mx-auto max-w-6xl px-4 md:px-6">
@@ -877,7 +983,7 @@ const nextFeature = () => {
         {/* 5. Pricing Tiers Section */}
 {/* 5. Pricing Tiers Section */}
 <section id="pricing" className="w-full py-16 md:py-24 bg-slate-200 dark:bg-slate-900 transition-colors duration-300">
-  <div className="mx-auto max-w-6xl px-4 md:px-6">
+  <div className="mx-auto max-w-7xl px-4 md:px-6">
     
     {/* Left-Aligned & Enlarged Header */}
     <Reveal className="max-w-3xl text-left">
@@ -885,53 +991,38 @@ const nextFeature = () => {
         Simple Pricing
       </p>
       <h2 className="font-display mt-3 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-white leading-[1.1]">
-        Transparent plans <span className="bg-gradient-to-r from-blue-600 via-indigo-500 to-sky-400 bg-clip-text text-transparent">for every venue</span>
+        Transparent plans <span className="bg-gradient-to-r from-blue-600 via-indigo-500 to-sky-400 bg-clip-text text-transparent">with full access</span>
       </h2>
       <p className="mt-4 text-base sm:text-lg leading-relaxed text-slate-600 dark:text-slate-400 italic">
-        No hidden fees, no credit card required to start your free 14-day trial.
+        All subscription durations include 100% full feature access. No hidden fees, cancel anytime.
       </p>
-      
-      {/* Billing Toggle */}
-      <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-1.5 shadow-sm">
-        <button
-          onClick={() => setIsAnnual(false)}
-          className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${!isAnnual ? 'bg-blue-700 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
-        >
-          Monthly
-        </button>
-        <button
-          onClick={() => setIsAnnual(true)}
-          className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all flex items-center gap-1.5 ${isAnnual ? 'bg-blue-700 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
-        >
-          Annual <span className="rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-slate-950">Save 20%</span>
-        </button>
-      </div>
     </Reveal>
 
 
     {/* Pricing Cards Grid with Micro-Animations */}
-    <div className="mt-12 grid gap-8 text-left md:grid-cols-3 items-stretch">
+    <div className="mt-12 grid gap-8 text-left grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-stretch">
       {pricingPlans.map((plan, i) => {
-        const price = isAnnual ? plan.annualPrice : plan.monthlyPrice
         return (
           <Reveal key={plan.name} delay={i * 100}>
-            <div className={`group relative h-full flex flex-col justify-between rounded-2xl p-6 sm:p-8 transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-xl hover:shadow-blue-500/10 overflow-hidden ${
-              plan.popular
+            <div className={`group relative h-full flex flex-col justify-between rounded-2xl p-6 sm:p-8 transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-xl hover:shadow-blue-500/10 ${
+              plan.featured
                 ? 'border-2 border-blue-600 dark:border-blue-500 bg-white dark:bg-slate-900 shadow-lg'
                 : 'border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 shadow-sm hover:border-blue-500/40 dark:hover:border-blue-500/40'
             }`}>
               
-              {/* Top Accent Line (Gradient on hover for regular cards, solid blue for popular) */}
-              <div className={`absolute top-0 left-0 right-0 h-1 transition-opacity duration-300 ${
-                plan.popular 
+              {/* Top Accent Line (Gradient on hover for regular cards, solid blue for featured) */}
+              <div className={`absolute top-0 left-0 right-0 h-1 rounded-t-2xl transition-opacity duration-300 ${
+                plan.featured 
                   ? 'bg-blue-600' 
                   : 'bg-gradient-to-r from-blue-600 via-indigo-500 to-sky-400 opacity-0 group-hover:opacity-100'
               }`} />
 
 
-              {plan.popular && (
-                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-blue-600 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-white shadow-md">
-                  Most Popular
+              {plan.badge && (
+                <span className={`absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-wider text-white shadow-md whitespace-nowrap ${
+                  plan.featured ? 'bg-blue-600' : 'bg-slate-800 dark:bg-slate-700'
+                }`}>
+                  {plan.badge}
                 </span>
               )}
 
@@ -940,14 +1031,14 @@ const nextFeature = () => {
                 <h3 className="font-display text-xl sm:text-2xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
                   {plan.name}
                 </h3>
-                <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">{plan.desc}</p>
                 
                 <div className="mt-6 flex items-baseline gap-1">
                   <span className="font-display text-4xl sm:text-5xl font-bold tracking-tight text-slate-900 dark:text-white transition-transform duration-300 group-hover:scale-105 origin-left inline-block">
-                    ₹{price.toLocaleString('en-IN')}
+                    ₹{plan.price.toLocaleString('en-IN')}
                   </span>
                   <span className="text-xs font-medium text-slate-600 dark:text-slate-400">/ month</span>
                 </div>
+                <p className="mt-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{plan.subtext}</p>
 
 
                 <ul className="mt-8 space-y-3">
@@ -964,7 +1055,7 @@ const nextFeature = () => {
               <a
                 href="/signup"
                 className={`mt-8 inline-flex h-11 w-full items-center justify-center rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
-                  plan.popular
+                  plan.featured
                     ? 'bg-blue-700 text-white shadow-md hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-600/25 active:scale-[0.98]'
                     : 'border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white hover:bg-blue-600 hover:text-white hover:border-blue-600 dark:hover:bg-blue-600 dark:hover:border-blue-600 active:scale-[0.98]'
                 }`}

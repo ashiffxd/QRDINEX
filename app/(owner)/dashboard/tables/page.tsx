@@ -10,7 +10,7 @@ import { AlertCircle, Plus } from 'lucide-react'
 import { CreateTableButton } from '@/components/owner/tables/CreateTableButton'
 
 export const metadata: Metadata = {
-  title: 'Dining Tables — QRDineX',
+  title: 'Dining Tables',
 }
 
 export default async function DiningTablesPage({

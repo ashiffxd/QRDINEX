@@ -14,7 +14,7 @@ import {
 import { AnalyticsDashboardClient } from '@/components/owner/analytics/AnalyticsDashboardClient'
 
 export const metadata: Metadata = {
-  title: 'Analytics & Reports — QRDineX',
+  title: 'Analytics & Reports',
   description: 'Business intelligence and operational analytics for restaurant owners.',
 }
 

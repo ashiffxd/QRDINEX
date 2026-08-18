@@ -1,6 +1,7 @@
 'use client'
 
 import { Menu, Store } from 'lucide-react'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 interface OwnerTopNavProps {
   onMenuClick: () => void
@@ -28,6 +29,7 @@ export function OwnerTopNav({ onMenuClick, userFullName, restaurantName }: Owner
       </div>
 
       <div className="flex items-center gap-4">
+        <ThemeToggle />
         <div className="flex items-center gap-3">
           <div className="hidden text-right sm:block">
             <p className="text-sm font-medium text-foreground">{userFullName}</p>

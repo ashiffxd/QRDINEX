@@ -6,7 +6,7 @@ import { CategoryList } from '@/components/owner/menu/CategoryList'
 import { CreateCategoryButton } from '@/components/owner/menu/CreateCategoryButton'
 
 export const metadata: Metadata = {
-  title: 'Menu Categories — QRDineX',
+  title: 'Menu Categories',
 }
 
 export default async function MenuCategoriesPage() {

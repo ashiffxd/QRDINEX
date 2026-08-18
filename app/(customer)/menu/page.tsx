@@ -33,6 +33,10 @@ export default async function CustomerMenuPage() {
     )
   }
 
+  if (session.status === 'COMPLETED' || session.status === 'CLOSED' || session.status === 'INVOICE_GENERATED') {
+    redirect('/invoice')
+  }
+
   // Double check device is an APPROVED participant
   const deviceId = await getOrSetDeviceId()
   const participant = await prisma.sessionParticipant.findUnique({
