@@ -12,12 +12,14 @@ import {
   QrCode,
   Clock,
   Activity,
+  Bell,
 } from 'lucide-react'
 import { useOwnerSocket } from '@/hooks/useOwnerSocket'
 import {
   ORDER_EVENTS,
   SESSION_EVENTS,
   PARTICIPANT_EVENTS,
+  WAITER_EVENTS,
 } from '@/lib/socket/events'
 import type { OwnerDashboardStats, DashboardActivity } from '@/services/owner/dashboard.service'
 
@@ -50,6 +52,14 @@ export function OverviewDashboardClient({ initialStats }: OverviewDashboardClien
     const unsubSessionClosed = on(SESSION_EVENTS.CLOSED, refreshStats)
     const unsubJoinReq = on(PARTICIPANT_EVENTS.JOIN_REQUEST, refreshStats)
 
+    // Play "ting" sound and refresh dashboard activities when a customer calls the waiter
+    const handleWaiterCall = () => {
+      const audio = new Audio('/ting.mp3')
+      audio.play().catch((err) => console.log('[OverviewDashboard] Audio playback prevented:', err))
+      refreshStats()
+    }
+    const unsubWaiterCall = on(WAITER_EVENTS.CALL, handleWaiterCall)
+
     return () => {
       unsubOrderNew()
       unsubOrderStatus()
@@ -57,6 +67,7 @@ export function OverviewDashboardClient({ initialStats }: OverviewDashboardClien
       unsubSessionBill()
       unsubSessionClosed()
       unsubJoinReq()
+      unsubWaiterCall()
     }
   }, [on, refreshStats])
 
@@ -140,15 +151,21 @@ export function OverviewDashboardClient({ initialStats }: OverviewDashboardClien
               stats.activities.map((activity) => (
                 <div key={activity.id} className="flex items-start gap-3 p-4 hover:bg-muted/10 transition-colors">
                   <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-                    activity.type === 'ORDER' ? 'bg-amber-500/10 text-amber-500' : 'bg-blue-500/10 text-blue-500'
+                    activity.type === 'ORDER' ? 'bg-amber-500/10 text-amber-500' :
+                    activity.type === 'WAITER_CALL' ? 'bg-orange-500/10 text-orange-500' :
+                    'bg-blue-500/10 text-blue-500'
                   }`}>
-                    <Clock className="h-4 w-4" />
+                    {activity.type === 'WAITER_CALL' ? (
+                      <Bell className="h-3.5 w-3.5" />
+                    ) : (
+                      <Clock className="h-4 w-4" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-foreground truncate">{activity.title}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{activity.desc}</p>
                   </div>
-                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                  <span className="text-[10px] text-muted-foreground whitespace-nowrap" suppressHydrationWarning>
                     {new Date(activity.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>

@@ -6,6 +6,7 @@ import { getCustomerMenu } from '@/services/customer/menu.service'
 import { CustomerMenuClient } from '@/components/customer/menu/CustomerMenuClient'
 import { ParticipantsManager } from '@/components/customer/menu/ParticipantsManager'
 import { FloatingCartButton } from '@/components/customer/cart/FloatingCartButton'
+import { FloatingWaiterCallButton } from '@/components/customer/menu/FloatingWaiterCallButton'
 import { UtensilsCrossed, AlertTriangle, IndianRupee } from 'lucide-react'
 import Link from 'next/link'
 import { getOrSetDeviceId } from '@/lib/auth/device'
@@ -103,6 +104,7 @@ export default async function CustomerMenuPage() {
       </main>
 
       <FloatingCartButton />
+      <FloatingWaiterCallButton />
     </div>
   )
 }

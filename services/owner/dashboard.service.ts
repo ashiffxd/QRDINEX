@@ -2,7 +2,7 @@ import prisma from '@/lib/prisma'
 
 export interface DashboardActivity {
   id: string
-  type: 'SESSION' | 'ORDER'
+  type: 'SESSION' | 'ORDER' | 'WAITER_CALL'
   title: string
   desc: string
   createdAt: string
@@ -20,10 +20,10 @@ export interface OwnerDashboardStats {
 }
 
 /**
- * Fetches the 10 most recent logs of session and order status updates, mapped to a unified activity interface.
+ * Fetches the 10 most recent logs of session, order status updates, and waiter calls mapped to a unified activity interface.
  */
 export async function getRecentActivities(restaurantId: string): Promise<DashboardActivity[]> {
-  const [sessionLogs, orderLogs] = await Promise.all([
+  const [sessionLogs, orderLogs, waiterCalls] = await Promise.all([
     prisma.diningSessionStatusLog.findMany({
       where: {
         session: {
@@ -67,6 +67,28 @@ export async function getRecentActivities(restaurantId: string): Promise<Dashboa
                     tableNumber: true,
                   },
                 },
+              },
+            },
+          },
+        },
+      },
+    }),
+    prisma.waiterCall.findMany({
+      where: {
+        session: {
+          restaurantId,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 10,
+      include: {
+        session: {
+          select: {
+            table: {
+              select: {
+                tableNumber: true,
               },
             },
           },
@@ -137,6 +159,24 @@ export async function getRecentActivities(restaurantId: string): Promise<Dashboa
       desc: log.remarks || `Table ${tableNum} - Changed to ${log.newStatus} by ${log.changedBy}`,
       createdAt: log.createdAt.toISOString(),
       tableNumber: tableNum,
+    })
+  })
+
+  // Map Waiter calls
+  waiterCalls.forEach((call) => {
+    let typeLabel = 'assistance'
+    if (call.type === 'WATER') typeLabel = 'Water'
+    if (call.type === 'TISSUE') typeLabel = 'Tissues'
+    if (call.type === 'CLEANING') typeLabel = 'Table Cleaning'
+    if (call.type === 'BILL') typeLabel = 'the Bill'
+
+    activities.push({
+      id: call.id,
+      type: 'WAITER_CALL',
+      title: `Table ${call.session.table.tableNumber} called Waiter`,
+      desc: `Requested ${typeLabel} (${call.status})`,
+      createdAt: call.createdAt.toISOString(),
+      tableNumber: call.session.table.tableNumber,
     })
   })
 

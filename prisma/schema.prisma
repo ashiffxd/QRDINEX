@@ -917,6 +917,9 @@ model DiningSession {
   /// Audit log of all status transitions for this session
   statusLogs DiningSessionStatusLog[]
 
+  /// Active or resolved waiter call requests for this session
+  waiterCalls WaiterCall[]
+
   // ---------------------------------------------------------------------------
   // Indexes
   // ---------------------------------------------------------------------------
@@ -1192,4 +1195,31 @@ model InvoiceItem {
 
   @@index([invoiceId])
   @@map("invoice_items")
+}
+
+enum WaiterCallType {
+  WATER
+  TISSUE
+  CLEANING
+  BILL
+  ASSISTANCE
+}
+
+enum WaiterCallStatus {
+  PENDING
+  RESOLVED
+}
+
+model WaiterCall {
+  id         String           @id @default(uuid()) @db.Uuid
+  sessionId  String           @db.Uuid
+  session    DiningSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  type       WaiterCallType
+  status     WaiterCallStatus @default(PENDING)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@index([sessionId])
+  @@index([status])
+  @@map("waiter_calls")
 }

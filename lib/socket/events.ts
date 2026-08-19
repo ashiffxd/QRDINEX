@@ -104,6 +104,18 @@ export const INVOICE_EVENTS = {
 } as const
 
 // ============================================================
+// WAITER EVENTS
+// Direction: Server → Owner namespace room & Customer namespace room
+// ============================================================
+
+export const WAITER_EVENTS = {
+  /** Customer requested waiter service */
+  CALL: 'waiter:call',
+  /** Staff resolved waiter call */
+  RESOLVED: 'waiter:resolved',
+} as const
+
+// ============================================================
 // UNION TYPES
 // Used for exhaustive handler typing in hooks.
 // ============================================================
@@ -115,6 +127,7 @@ export type OwnerEventName =
   | typeof SESSION_EVENTS.PENDING_APPROVAL
   | typeof PARTICIPANT_EVENTS.JOIN_REQUEST
   | (typeof INVOICE_EVENTS)[keyof typeof INVOICE_EVENTS]
+  | (typeof WAITER_EVENTS)[keyof typeof WAITER_EVENTS]
 
 export type CustomerEventName =
   | typeof PARTICIPANT_EVENTS.ACTION_RESOLVED
@@ -127,3 +140,4 @@ export type CustomerEventName =
   | typeof ORDER_EVENTS.NEW
   | typeof ORDER_EVENTS.STATUS_UPDATED
   | (typeof INVOICE_EVENTS)[keyof typeof INVOICE_EVENTS]
+  | (typeof WAITER_EVENTS)[keyof typeof WAITER_EVENTS]
