@@ -12,7 +12,10 @@ export function SessionStatusGuard({ children }: { children: React.ReactNode }) 
   const [sessionState, setSessionState] = useState<'ACTIVE' | 'INVOICE_GENERATED' | 'COMPLETED'>('ACTIVE')
   const { on } = useCustomerSocket()
   const pathname = usePathname()
-  const isReceiptOrOrdersPage = pathname === '/invoice' || pathname === '/orders'
+  const isExcludedPage =
+    pathname === '/invoice' ||
+    pathname === '/orders' ||
+    pathname.startsWith('/s/')
 
   useEffect(() => {
     // Sync status with database on initial mount
@@ -49,7 +52,7 @@ export function SessionStatusGuard({ children }: { children: React.ReactNode }) 
   }, [on])
 
   // Block access to menu/cart if session is closed or invoice is generated
-  if ((sessionState === 'COMPLETED' || sessionState === 'INVOICE_GENERATED') && !isReceiptOrOrdersPage) {
+  if ((sessionState === 'COMPLETED' || sessionState === 'INVOICE_GENERATED') && !isExcludedPage) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-12 text-center">
         <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-lg">
