@@ -68,6 +68,17 @@ export function LiveTableGrid() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [actioningId, setActioningId] = useState<string | null>(null)
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    onConfirm: () => void
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  })
 
   const { isConnected, on } = useOwnerSocket()
 
@@ -270,21 +281,27 @@ export function LiveTableGrid() {
   }
 
   const handleRejectPending = async (tableId: string) => {
-    if (!confirm('Are you sure you want to decline this request?')) return
-    setActioningId(tableId)
-    try {
-      const res = await fetch(`/api/owner/tables/${tableId}/approve`, {
-        method: 'DELETE',
-      })
-      const data = await res.json()
-      if (!data.success) {
-        alert(data.message || 'Failed to decline request.')
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Decline Request',
+      message: 'Are you sure you want to decline this request? The customer will be blocked from accessing the menu.',
+      onConfirm: async () => {
+        setActioningId(tableId)
+        try {
+          const res = await fetch(`/api/owner/tables/${tableId}/approve`, {
+            method: 'DELETE',
+          })
+          const data = await res.json()
+          if (!data.success) {
+            alert(data.message || 'Failed to decline request.')
+          }
+        } catch {
+          alert('Network error rejecting session.')
+        } finally {
+          setActioningId(null)
+        }
       }
-    } catch {
-      alert('Network error rejecting session.')
-    } finally {
-      setActioningId(null)
-    }
+    })
   }
 
   // ── UI Render States ─────────────────────────────────────────
@@ -490,6 +507,48 @@ export function LiveTableGrid() {
           )
         })}
       </div>
+
+      {/* Custom Confirmation Modal Card */}
+      {confirmDialog.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between border-b border-border/60 pb-3">
+              <div className="flex items-center gap-2">
+                <XCircle className="h-5 w-5 text-destructive animate-pulse" />
+                <h3 className="font-display text-lg font-bold text-foreground">{confirmDialog.title}</h3>
+              </div>
+              <button
+                onClick={() => setConfirmDialog((prev) => ({ ...prev, isOpen: false }))}
+                className="rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            
+            <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
+              {confirmDialog.message}
+            </p>
+            
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setConfirmDialog((prev) => ({ ...prev, isOpen: false }))}
+                className="rounded-xl border border-input bg-background px-4 py-2.5 text-xs font-semibold text-foreground hover:bg-muted transition-all active:scale-95"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  confirmDialog.onConfirm()
+                  setConfirmDialog((prev) => ({ ...prev, isOpen: false }))
+                }}
+                className="rounded-xl bg-destructive px-4 py-2.5 text-xs font-semibold text-destructive-foreground hover:bg-destructive/90 transition-all active:scale-95 shadow-md shadow-destructive/25"
+              >
+                Decline Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

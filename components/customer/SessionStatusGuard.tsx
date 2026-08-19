@@ -12,10 +12,11 @@ export function SessionStatusGuard({ children }: { children: React.ReactNode }) 
   const [sessionState, setSessionState] = useState<'ACTIVE' | 'INVOICE_GENERATED' | 'COMPLETED'>('ACTIVE')
   const { on } = useCustomerSocket()
   const pathname = usePathname()
+  const isQrEntryPage = pathname.startsWith('/s/')
   const isExcludedPage =
     pathname === '/invoice' ||
     pathname === '/orders' ||
-    pathname.startsWith('/s/')
+    isQrEntryPage
 
   useEffect(() => {
     // Sync status with database on initial mount
@@ -99,7 +100,7 @@ export function SessionStatusGuard({ children }: { children: React.ReactNode }) 
 
   return (
     <>
-      {sessionState === 'INVOICE_GENERATED' && (
+      {sessionState === 'INVOICE_GENERATED' && !isQrEntryPage && (
         <Link
           href="/invoice"
           className="sticky top-0 z-50 flex items-center justify-center gap-2 bg-blue-600 px-4 py-2.5 text-center text-xs font-bold text-white shadow-md hover:bg-blue-700 transition-colors"
@@ -109,7 +110,7 @@ export function SessionStatusGuard({ children }: { children: React.ReactNode }) 
           <ChevronRight className="h-4 w-4 shrink-0" />
         </Link>
       )}
-      {sessionState === 'COMPLETED' && (
+      {sessionState === 'COMPLETED' && !isQrEntryPage && (
         <Link
           href="/invoice"
           className="sticky top-0 z-50 flex items-center justify-center gap-2 bg-emerald-600 px-4 py-2.5 text-center text-xs font-bold text-white shadow-md hover:bg-emerald-700 transition-colors"
