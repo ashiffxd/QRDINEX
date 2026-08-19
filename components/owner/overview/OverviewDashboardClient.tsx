@@ -148,28 +148,49 @@ export function OverviewDashboardClient({ initialStats }: OverviewDashboardClien
                 </p>
               </div>
             ) : (
-              stats.activities.map((activity) => (
-                <div key={activity.id} className="flex items-start gap-3 p-4 hover:bg-muted/10 transition-colors">
-                  <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-                    activity.type === 'ORDER' ? 'bg-amber-500/10 text-amber-500' :
-                    activity.type === 'WAITER_CALL' ? 'bg-orange-500/10 text-orange-500' :
-                    'bg-blue-500/10 text-blue-500'
-                  }`}>
-                    {activity.type === 'WAITER_CALL' ? (
-                      <Bell className="h-3.5 w-3.5" />
-                    ) : (
-                      <Clock className="h-4 w-4" />
-                    )}
+              stats.activities.map((activity) => {
+                const isWaiterCall = activity.type === 'WAITER_CALL'
+                return (
+                  <div
+                    key={activity.id}
+                    className={`flex items-start gap-3 p-4 transition-all duration-300 ${
+                      isWaiterCall
+                        ? 'bg-amber-500/10 dark:bg-amber-500/20 border-l-4 border-amber-500 animate-pulse'
+                        : 'hover:bg-muted/10'
+                    }`}
+                  >
+                    <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+                      activity.type === 'ORDER' ? 'bg-amber-500/10 text-amber-500' :
+                      isWaiterCall ? 'bg-amber-500 text-black dark:bg-amber-400 dark:text-black shadow-md shadow-amber-500/25' :
+                      'bg-blue-500/10 text-blue-500'
+                    }`}>
+                      {isWaiterCall ? (
+                        <Bell className="h-3.5 w-3.5" />
+                      ) : (
+                        <Clock className="h-4 w-4" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className={`text-sm font-semibold truncate ${isWaiterCall ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-foreground'}`}>
+                          {activity.title}
+                        </p>
+                        {isWaiterCall && (
+                          <span className="inline-flex items-center rounded-full bg-amber-500 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-black dark:bg-amber-400">
+                            Service Request
+                          </span>
+                        )}
+                      </div>
+                      <p className={`text-xs mt-0.5 ${isWaiterCall ? 'text-amber-700/80 dark:text-amber-300/80 font-medium' : 'text-muted-foreground'}`}>
+                        {activity.desc}
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground whitespace-nowrap" suppressHydrationWarning>
+                      {new Date(activity.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{activity.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{activity.desc}</p>
-                  </div>
-                  <span className="text-[10px] text-muted-foreground whitespace-nowrap" suppressHydrationWarning>
-                    {new Date(activity.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-              ))
+                )
+              })
             )}
           </div>
         </section>
