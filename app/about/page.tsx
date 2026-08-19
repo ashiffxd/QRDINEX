@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react'
 import { useTheme } from 'next-themes'
 import {
   ArrowLeft, Utensils, Heart, ShieldCheck, Zap, Clock, Users,
-  Sun, Moon, Award, Target, Eye
+  Sun, Moon, Award, Target, Eye, BarChart3, Globe, Sparkles
 } from 'lucide-react'
 import Link from 'next/link'
 
-// --- Theme Toggle (copied from main page) --------------------------------
+// --- Theme Toggle --------------------------------
 function ThemeToggle() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
@@ -40,26 +40,34 @@ export default function AboutPage() {
   useEffect(() => setMounted(true), [])
 
   return (
-    <div className="flex min-h-screen flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    <div className="relative overflow-hidden min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
         .font-display { font-family: 'Space Grotesk', sans-serif; }
         .font-nav { font-family: 'Outfit', sans-serif; letter-spacing: 0.02em; }
         @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(16px); }
+          from { opacity: 0; transform: translateY(24px); }
           to   { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-up { opacity: 0; animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) forwards; }
         .d1 { animation-delay: 0.05s; }
-        .d2 { animation-delay: 0.2s; }
-        .d3 { animation-delay: 0.35s; }
+        .d2 { animation-delay: 0.15s; }
+        .d3 { animation-delay: 0.25s; }
+        .d4 { animation-delay: 0.35s; }
+        .d5 { animation-delay: 0.45s; }
+        .d6 { animation-delay: 0.55s; }
       `}</style>
+
+      {/* Decorative Blur Background Circles */}
+      <div className="absolute top-1/4 left-1/2 -z-10 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-500/10 blur-[130px] dark:bg-teal-500/5" />
+      <div className="absolute bottom-1/4 left-1/3 -z-10 h-[450px] w-[450px] rounded-full bg-indigo-500/10 blur-[160px] dark:bg-indigo-500/5" />
+      <div className="absolute top-3/4 right-1/4 -z-10 h-80 w-80 rounded-full bg-emerald-500/5 blur-[120px]" />
 
       {/* Floating Header */}
       <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-4 pointer-events-none">
         <nav
-          className="pointer-events-auto flex items-center gap-2 rounded-full px-5 py-2.5 bg-white/20 dark:bg-slate-900/70 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.18)] border border-white/30 dark:border-white/10 transition-all duration-500"
+          className="pointer-events-auto flex items-center gap-2 rounded-full px-5 py-2.5 bg-white/30 dark:bg-slate-900/60 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.1)] border border-white/20 dark:border-white/5 hover:border-white/40 dark:hover:border-white/10 transition-all duration-300"
         >
           {/* Back link */}
           <Link href="/" className="flex items-center gap-1.5 pr-3 sm:pr-4 border-r border-white/25 dark:border-white/15 mr-1 font-nav text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
@@ -68,7 +76,7 @@ export default function AboutPage() {
           </Link>
 
           <div className="flex items-center mr-2">
-            <img src="/logo.png" alt="QRDineX Logo" className="h-8 w-auto object-contain shadow-sm" />
+            <img src="/logo.png" alt="QRDineX Logo" className="h-8 w-auto object-contain" />
           </div>
 
           {/* Theme Toggle */}
@@ -77,65 +85,137 @@ export default function AboutPage() {
       </header>
 
       <main className="flex-1 pt-32 pb-24">
-        <div className="mx-auto max-w-4xl px-4 md:px-6">
+        <div className="mx-auto max-w-5xl px-4 md:px-6">
           
           {/* Hero Header */}
-          <div className="text-center max-w-2xl mx-auto">
-            <p className="font-mono text-xs sm:text-sm font-semibold uppercase tracking-widest text-teal-600 dark:text-teal-400 animate-fade-up d1">
-              About QRDineX
-            </p>
-            <h1 className="font-display mt-4 text-4xl sm:text-5xl font-bold tracking-tight text-slate-900 dark:text-white leading-[1.1] animate-fade-up d2">
-              Transforming the way we <span className="bg-gradient-to-r from-teal-600 via-emerald-500 to-sky-400 bg-clip-text text-transparent">dine out</span>
+          <div className="text-center max-w-3xl mx-auto">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/10 dark:bg-teal-500/20 px-3 py-1 text-xs font-semibold text-teal-600 dark:text-teal-400 animate-fade-up d1">
+              <Sparkles className="h-3 w-3" />
+              <span>Meet QRDineX</span>
+            </div>
+            <h1 className="font-display mt-6 text-4xl sm:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.05] animate-fade-up d2">
+              Transforming the way we <span className="bg-gradient-to-r from-teal-500 via-emerald-400 to-sky-400 bg-clip-text text-transparent">dine out</span>
             </h1>
-            <p className="mt-6 text-base sm:text-lg leading-relaxed text-slate-600 dark:text-slate-400 italic animate-fade-up d3">
-              "Skip the Wait, Enjoy the Plate" — Our goal is to connect diners and kitchens seamlessly, eliminating friction and boosting hospitality.
+            <p className="mt-6 text-base sm:text-xl leading-relaxed text-slate-600 dark:text-slate-400 max-w-2xl mx-auto animate-fade-up d3">
+              "Skip the Wait, Enjoy the Plate" — We build lightweight, zero-install software that connects diners and kitchens in real time, making dining seamless and delightful.
             </p>
           </div>
 
-          <hr className="my-16 border-slate-200 dark:border-slate-800" />
+          {/* Core Impact Statistics */}
+          <div className="mt-16 grid gap-4 grid-cols-2 lg:grid-cols-4 animate-fade-up d4">
+            <div className="group relative overflow-hidden rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-teal-500/20 hover:bg-slate-50 dark:hover:bg-slate-900/80">
+              <p className="text-3xl sm:text-4xl font-extrabold text-teal-600 dark:text-teal-400">15m+</p>
+              <p className="mt-1 text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100">Avg. Wait Time Saved</p>
+              <p className="mt-1 text-[11px] text-muted-foreground leading-normal">Per customer dining session.</p>
+            </div>
+            <div className="group relative overflow-hidden rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-teal-500/20 hover:bg-slate-50 dark:hover:bg-slate-900/80">
+              <p className="text-3xl sm:text-4xl font-extrabold text-teal-600 dark:text-teal-400">+18%</p>
+              <p className="mt-1 text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100">Average Order Value</p>
+              <p className="mt-1 text-[11px] text-muted-foreground leading-normal">Boosted via visual menus.</p>
+            </div>
+            <div className="group relative overflow-hidden rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-teal-500/20 hover:bg-slate-50 dark:hover:bg-slate-900/80">
+              <p className="text-3xl sm:text-4xl font-extrabold text-teal-600 dark:text-teal-400">Zero</p>
+              <p className="mt-1 text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100">App Installs Required</p>
+              <p className="mt-1 text-[11px] text-muted-foreground leading-normal">Scans instantly in browser.</p>
+            </div>
+            <div className="group relative overflow-hidden rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-teal-500/20 hover:bg-slate-50 dark:hover:bg-slate-900/80">
+              <p className="text-3xl sm:text-4xl font-extrabold text-teal-600 dark:text-teal-400">99.9%</p>
+              <p className="mt-1 text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100">Socket.io Uptime</p>
+              <p className="mt-1 text-[11px] text-muted-foreground leading-normal">Bulletproof kitchen sync.</p>
+            </div>
+          </div>
+
+          <hr className="my-16 border-slate-200 dark:border-slate-800/50" />
 
           {/* 3 Pillars Section */}
-          <div className="grid gap-8 sm:grid-cols-3">
-            <div className="flex flex-col items-center text-center p-6 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200/50 dark:border-slate-800/60 shadow-sm">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-950/80 text-teal-600 dark:text-teal-400 mb-4">
+          <div className="grid gap-8 sm:grid-cols-3 animate-fade-up d5">
+            <div className="group flex flex-col items-center text-center p-6 bg-slate-50/40 dark:bg-slate-900/20 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm hover:border-teal-500/30 transition-all duration-300 hover:-translate-y-1">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-100 dark:bg-teal-950/80 text-teal-600 dark:text-teal-400 mb-5 shadow-sm group-hover:scale-110 transition-transform duration-300">
                 <Target className="h-6 w-6" />
               </div>
               <h3 className="font-display text-lg font-bold text-slate-900 dark:text-white">Our Mission</h3>
-              <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Empowering venues to focus on high-touch hospitality by automating low-touch operations.
+              <p className="mt-3 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                Empower restaurants to deliver high-touch hospitality by automating time-consuming transactional operations.
               </p>
             </div>
 
-            <div className="flex flex-col items-center text-center p-6 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200/50 dark:border-slate-800/60 shadow-sm">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-950/80 text-teal-600 dark:text-teal-400 mb-4">
+            <div className="group flex flex-col items-center text-center p-6 bg-slate-50/40 dark:bg-slate-900/20 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm hover:border-teal-500/30 transition-all duration-300 hover:-translate-y-1">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-100 dark:bg-teal-950/80 text-teal-600 dark:text-teal-400 mb-5 shadow-sm group-hover:scale-110 transition-transform duration-300">
                 <Eye className="h-6 w-6" />
               </div>
               <h3 className="font-display text-lg font-bold text-slate-900 dark:text-white">Our Vision</h3>
-              <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                A world where dining out is completely seamless, zero-wait, and personalized for every guest.
+              <p className="mt-3 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                Build a world where eating out is friction-free, social, and perfectly synchronized from dining room to kitchen.
               </p>
             </div>
 
-            <div className="flex flex-col items-center text-center p-6 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200/50 dark:border-slate-800/60 shadow-sm">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-950/80 text-teal-600 dark:text-teal-400 mb-4">
+            <div className="group flex flex-col items-center text-center p-6 bg-slate-50/40 dark:bg-slate-900/20 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm hover:border-teal-500/30 transition-all duration-300 hover:-translate-y-1">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-100 dark:bg-teal-950/80 text-teal-600 dark:text-teal-400 mb-5 shadow-sm group-hover:scale-110 transition-transform duration-300">
                 <Award className="h-6 w-6" />
               </div>
               <h3 className="font-display text-lg font-bold text-slate-900 dark:text-white">Our Values</h3>
-              <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Built on speed, data privacy, and a deep appreciation for culinary operations.
+              <p className="mt-3 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                Prioritizing lightning speed, diner privacy, and robust reliability to support fast-paced culinary service.
               </p>
             </div>
           </div>
 
-          {/* Story Content Block */}
-          <div className="mt-16 bg-slate-50 dark:bg-slate-900/50 rounded-3xl p-8 border border-slate-200/60 dark:border-slate-800/80">
-            <h2 className="font-display text-2xl font-bold text-slate-900 dark:text-white">The QRDineX Story</h2>
-            <p className="mt-4 text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-400">
-              Founded in 2026, QRDineX emerged from a simple dining frustration: waiting 15 minutes just to catch a waiter's eye, place an order, or pay the bill. We realized that while mobile web technology had advanced, the in-restaurant dining journey was still stuck in the paper era.
-            </p>
-            <p className="mt-4 text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-400">
-              We built QRDineX as a lightweight, no-install platform that gives guests immediate access to visual ordering, group cart collaboration, and instant billing directly on their device. Today, cafes, bistros, and high-volume dining rooms use QRDineX to slash wait times, boost staff efficiency, and increase average ticket sizes by up to 18% through beautiful, high-res digital menus.
-            </p>
+          {/* Interactive Timeline Section */}
+          <div className="mt-24 animate-fade-up d6">
+            <div className="text-center">
+              <h2 className="font-display text-3xl font-bold text-slate-900 dark:text-white">Evolution Timeline</h2>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">Our journey from a simple dining room frustration to a robust SaaS platform.</p>
+            </div>
+
+            <div className="mt-12 relative border-l border-slate-200 dark:border-slate-800/80 ml-4 md:ml-12 space-y-10">
+              {/* Timeline Item 1 */}
+              <div className="relative pl-8 md:pl-12 group">
+                {/* Dot */}
+                <div className="absolute -left-[9px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-950 border-2 border-teal-600 dark:border-teal-400 group-hover:bg-teal-500 transition-colors duration-300" />
+                <div className="rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40 p-6 transition-all duration-300 group-hover:border-teal-500/20 group-hover:bg-slate-50 dark:group-hover:bg-slate-900/60">
+                  <span className="inline-block rounded-md bg-teal-100 dark:bg-teal-950 px-2 py-0.5 text-xs font-bold text-teal-600 dark:text-teal-400">2025</span>
+                  <h4 className="mt-2 text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-teal-500" />
+                    The Friction Spotted
+                  </h4>
+                  <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Experiencing frustrating delays in busy bistros just to order or pay inspired us. We realized that paper menus and manual billing belong in the past, and mobile technology should unlock a smoother experience.
+                  </p>
+                </div>
+              </div>
+
+              {/* Timeline Item 2 */}
+              <div className="relative pl-8 md:pl-12 group">
+                {/* Dot */}
+                <div className="absolute -left-[9px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-950 border-2 border-teal-600 dark:border-teal-400 group-hover:bg-teal-500 transition-colors duration-300" />
+                <div className="rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40 p-6 transition-all duration-300 group-hover:border-teal-500/20 group-hover:bg-slate-50 dark:group-hover:bg-slate-900/60">
+                  <span className="inline-block rounded-md bg-teal-100 dark:bg-teal-950 px-2 py-0.5 text-xs font-bold text-teal-600 dark:text-teal-400">Early 2026</span>
+                  <h4 className="mt-2 text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-teal-500" />
+                    Real-Time Engineering
+                  </h4>
+                  <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Designed and engineered a zero-install browser environment using Socket.io and Next.js. We introduced shared multi-device dining carts, so group diners could add items, coordinate orders, and call service together.
+                  </p>
+                </div>
+              </div>
+
+              {/* Timeline Item 3 */}
+              <div className="relative pl-8 md:pl-12 group">
+                {/* Dot */}
+                <div className="absolute -left-[9px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-950 border-2 border-teal-600 dark:border-teal-400 group-hover:bg-teal-500 transition-colors duration-300" />
+                <div className="rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40 p-6 transition-all duration-300 group-hover:border-teal-500/20 group-hover:bg-slate-50 dark:group-hover:bg-slate-900/60">
+                  <span className="inline-block rounded-md bg-teal-100 dark:bg-teal-950 px-2 py-0.5 text-xs font-bold text-teal-600 dark:text-teal-400">Mid 2026</span>
+                  <h4 className="mt-2 text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-teal-500" />
+                    Going Live & Launch
+                  </h4>
+                  <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Rolled out QRDineX to busy cafes, high-volume dining rooms, and lounges. We integrated automated table statuses, a visual Kitchen Display System (KDS), and secure billing options, helping hosts run smarter dining floors.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
         </div>
