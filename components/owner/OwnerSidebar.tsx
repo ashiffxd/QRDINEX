@@ -117,7 +117,10 @@ export function OwnerSidebar({ onClose }: OwnerSidebarProps) {
   return (
     <div className="flex h-full w-full flex-col bg-card border-r border-border shadow-sm">
       <div className="flex h-16 items-center justify-between px-6 border-b border-border">
-        <span className="text-xl font-bold tracking-tight text-primary">QRDineX</span>
+        <div className="flex items-center gap-2">
+          <img src="/logo.png" alt="QRDineX Logo" className="h-8 w-auto object-contain shadow-sm" />
+          
+        </div>
         {onClose && (
           <button 
             onClick={onClose}

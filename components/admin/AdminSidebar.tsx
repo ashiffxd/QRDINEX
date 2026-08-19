@@ -113,12 +113,9 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         <div className="flex h-16 items-center justify-between border-b border-border px-5">
           <Link
             href="/admin/dashboard"
-            className="flex items-center gap-2.5 font-bold text-foreground"
+            className="flex items-center font-bold text-foreground"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Utensils className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="text-base tracking-tight">QRDineX</span>
+            <img src="/logo.png" alt="QRDineX Logo" className="h-8 w-auto object-contain shadow-sm" />
           </Link>
 
           {/* Close button — mobile only */}

@@ -182,9 +182,12 @@ export function CustomerInvoiceClient({
           <p className="mt-1 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
             ✓ Dining Session Completed
           </p>
-          <div className="mt-4 rounded-xl border border-emerald-500/20 bg-background/80 p-3 text-xs text-muted-foreground backdrop-blur">
-            <p className="font-medium text-foreground">Thank you for dining with us!</p>
-            <p className="mt-0.5">Your session has been finalized. We hope to see you again soon.</p>
+          <div className="mt-4 rounded-xl border border-emerald-500/20 bg-background/80 p-4 text-xs text-muted-foreground backdrop-blur flex flex-col items-center gap-2">
+            <img src="/logo.png" alt="QRDineX Logo" className="h-10 w-auto object-contain shadow-sm" />
+            <div>
+              <p className="font-medium text-foreground text-sm">Thank you for dining with us!</p>
+              <p className="mt-0.5">Your session has been finalized. We hope to see you again soon.</p>
+            </div>
           </div>
         </div>
       )}

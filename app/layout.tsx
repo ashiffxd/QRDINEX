@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'QRDineX - One Platform. Complete Restaurant Management.',
   description:
     'Modern SaaS platform for restaurants to manage tables, QR codes, menus, and orders.',
+  icons: {
+    icon: '/tabicon.png',
+  },
 }
 
 export default function RootLayout({

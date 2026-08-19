@@ -41,10 +41,9 @@ export default function SignupPage() {
         />
 
         {/* Logo */}
-        <div className="relative z-10 flex items-center gap-2">
-          <Utensils className="h-7 w-7" />
-          <span className="font-display text-2xl font-bold tracking-tight">QRDineX</span>
-        </div>
+        <Link href="/" className="relative z-10 flex items-center hover:opacity-90 transition-opacity">
+          <img src="/logo.png" alt="QRDineX Logo" className="h-9 w-auto object-contain shadow-sm" />
+        </Link>
 
         {/* Headline */}
         <div className="relative z-10 space-y-6">
@@ -89,10 +88,9 @@ export default function SignupPage() {
       {/* ------------------------------------------------------------------ */}
       <div className="flex flex-1 flex-col items-center justify-start overflow-y-auto px-4 py-10 sm:px-8 lg:px-12">
         {/* Mobile logo */}
-        <div className="mb-8 flex items-center gap-2 lg:hidden">
-          <Utensils className="h-6 w-6 text-primary" />
-          <span className="font-display text-xl font-bold tracking-tight">QRDineX</span>
-        </div>
+        <Link href="/" className="mb-8 flex items-center lg:hidden hover:opacity-90 transition-opacity">
+          <img src="/logo.png" alt="QRDineX Logo" className="h-8 w-auto object-contain shadow-sm" />
+        </Link>
 
         <div className="w-full max-w-2xl">
           {/* Header */}

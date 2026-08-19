@@ -349,11 +349,8 @@ const nextFeature = () => {
     }}
   >
     {/* Brand */}
-    <a href="/" className="flex items-center gap-2 pr-3 sm:pr-4 border-r border-white/25 dark:border-white/15 mr-1">
-      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-700/90 shadow-sm">
-        <Utensils className="h-3.5 w-3.5 text-white" />
-      </div>
-      <span className="font-nav text-sm font-bold tracking-wide text-slate-900 dark:text-white">QRDineX</span>
+    <a href="/" className="flex items-center pr-3 sm:pr-4 border-r border-white/25 dark:border-white/15 mr-1">
+      <img src="/logo.png" alt="QRDineX Logo" className="h-8 w-auto object-contain shadow-sm" />
     </a>
 
     {/* Links */}
@@ -361,7 +358,7 @@ const nextFeature = () => {
     <a href="#features" className="hidden lg:block font-nav text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2.5 py-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10">Features</a>
     <a href="#calculator" className="hidden md:block font-nav text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2.5 py-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10">ROI Calculator</a>
     <a href="#pricing" className="hidden sm:block font-nav text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2.5 py-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10">Pricing</a>
-    <a href="#faq" className="hidden md:block font-nav text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2.5 py-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10">FAQ</a>
+    <a href="/about" className="hidden md:block font-nav text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2.5 py-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10">About</a>
 
     {/* Theme Toggle */}
     <ThemeToggle />
