@@ -141,6 +141,22 @@ export interface InvoicePaidPayload {
 }
 
 // ============================================================
+// WAITER CALL EVENT PAYLOADS
+// ============================================================
+
+export interface WaiterCallPayload {
+  id: string
+  type: 'WATER' | 'TISSUE' | 'CLEANING' | 'ASSISTANCE' | 'BILL'
+  status: string
+  createdAt: string
+  tableNumber: number
+}
+
+export interface WaiterCallResolvedPayload {
+  id: string
+}
+
+// ============================================================
 // OWNER NAMESPACE — SERVER → CLIENT EVENTS
 // Events sent from the server to connected owner clients.
 // ============================================================
@@ -157,6 +173,8 @@ export interface OwnerServerToClientEvents {
   'participant:action_resolved': (payload: ParticipantActionResolvedPayload) => void
   'invoice:generated': (payload: InvoiceGeneratedPayload) => void
   'invoice:paid': (payload: InvoicePaidPayload) => void
+  'waiter:call': (payload: WaiterCallPayload) => void
+  'waiter:resolved': (payload: WaiterCallResolvedPayload) => void
 }
 
 // ============================================================
