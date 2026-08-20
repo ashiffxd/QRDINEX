@@ -32,6 +32,7 @@ interface AnalyticsDashboardClientProps {
   initialTables: any
   initialKitchen: any
   initialSessions: any
+  initialFeedback: any
 }
 
 export function AnalyticsDashboardClient({
@@ -78,6 +79,7 @@ export function AnalyticsDashboardClient({
           resTables,
           resKitchen,
           resSessions,
+          resFeedback,
         ] = await Promise.all([
           fetch(`/api/owner/analytics/overview?${queryParams.toString()}`),
           fetch(`/api/owner/analytics/revenue?${queryParams.toString()}`),
