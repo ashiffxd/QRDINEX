@@ -216,7 +216,7 @@ const pricingPlans = [
     price: 499,
     subtext: 'Billed ₹1,497 every 3 months',
     badge: 'Save 15%',
-    cta: 'Start 14-Day Free Trial',
+    cta: 'Start 7-Day Free Trial',
     featured: false,
     features: [
       'Unlimited Tables',
@@ -232,7 +232,7 @@ const pricingPlans = [
     price: 429,
     subtext: 'Billed ₹2,574 every 6 months',
     badge: 'Most Popular',
-    cta: 'Start 14-Day Free Trial',
+    cta: 'Register Now',
     featured: true,
     features: [
       'Unlimited Tables',
@@ -1202,7 +1202,7 @@ const nextFeature = () => {
           {/* Top row – brand + social */}
           <div className="flex flex-col gap-5 mb-10">
             {/* Logo */}
-            <a href="#" className="flex items-center gap-2 w-fit" aria-label="QRDine home">
+            <a href="#" className="flex items-center gap-2 w-fit" aria-label="QRDineX home">
               <img src="/logo.png" alt="QR Dine logo" className="h-12 w-auto object-contain" />
             </a>
             <p className="text-sm leading-relaxed text-slate-400 max-w-xs">
@@ -1256,14 +1256,10 @@ const nextFeature = () => {
                 </li>
                 <li>
                   <a href="mailto:hello@qrdine.app" className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-2">
-                    <Mail className="h-3.5 w-3.5 shrink-0" /> hello@qrdine.app
+                    <Mail className="h-3.5 w-3.5 shrink-0" /> qrdinex@gmail.com
                   </a>
                 </li>
-                <li>
-                  <a href="mailto:support@qrdine.app" className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-2">
-                    <Mail className="h-3.5 w-3.5 shrink-0" /> support@qrdine.app
-                  </a>
-                </li>
+                
               </ul>
             </div>
 
@@ -1290,7 +1286,7 @@ const nextFeature = () => {
           {/* Divider + copyright */}
           <div className="border-t border-slate-800 pt-6">
             <p className="text-center text-xs text-slate-500">
-              {new Date().getFullYear()} Qrdine. All rights reserved.
+              {new Date().getFullYear()} QRDineX. All rights reserved.
             </p>
           </div>
         </div>
