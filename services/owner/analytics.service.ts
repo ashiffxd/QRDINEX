@@ -565,3 +565,41 @@ export async function getSessionAnalytics(restaurantId: string, filterOptions: D
     avgDiningDurationMins,
   }
 }
+
+// ---------------------------------------------------------------------------
+// 8. CUSTOMER FEEDBACK ANALYTICS
+// ---------------------------------------------------------------------------
+export async function getFeedbackAnalytics(restaurantId: string, filterOptions: DateFilterOptions = {}) {
+  const bounds = getDateBounds(filterOptions)
+  const dateWhere = bounds.gte || bounds.lte ? { createdAt: { gte: bounds.gte, lte: bounds.lte } } : {}
+
+  const feedbacks = await prisma.feedback.groupBy({
+    by: ['restaurantRating'],
+    where: {
+      restaurantId,
+      ...dateWhere
+    },
+    _count: {
+      id: true
+    }
+  })
+
+  const ratings: Record<string, number> = {
+    BAD: 0,
+    GOOD: 0,
+    BEST: 0,
+    EXCELLENT: 0
+  }
+
+  feedbacks.forEach((f) => {
+    ratings[f.restaurantRating] = f._count.id
+  })
+
+  return [
+    { rating: 'BAD', label: 'Bad', count: ratings.BAD },
+    { rating: 'GOOD', label: 'Good', count: ratings.GOOD },
+    { rating: 'BEST', label: 'Best', count: ratings.BEST },
+    { rating: 'EXCELLENT', label: 'Excellent', count: ratings.EXCELLENT }
+  ]
+}
+

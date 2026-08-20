@@ -8,11 +8,13 @@ import {
   MinusCircle,
   ArrowRight,
   Store,
+  Smile,
 } from 'lucide-react'
 import {
   getDashboardStats,
   getRecentRestaurants,
   getPendingRestaurants,
+  getQrdinexFeedbackStats,
 } from '@/services/admin/dashboard.service'
 import { StatsCard } from '@/components/admin/StatsCard'
 import { StatusBadge } from '@/components/admin/StatusBadge'
@@ -32,11 +34,12 @@ export const metadata: Metadata = {
 // ---------------------------------------------------------------------------
 
 export default async function AdminDashboardPage() {
-  // Parallel data fetching — all three queries run simultaneously
-  const [stats, recentRestaurants, pendingRestaurants] = await Promise.all([
+  // Parallel data fetching — all four queries run simultaneously
+  const [stats, recentRestaurants, pendingRestaurants, feedbackStats] = await Promise.all([
     getDashboardStats(),
     getRecentRestaurants(8),
     getPendingRestaurants(),
+    getQrdinexFeedbackStats(),
   ])
 
   // Limit pending display on dashboard to top 5 (full list on /admin/pending)
@@ -213,6 +216,84 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
         )}
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* PLATFORM SATISFACTION FEEDBACK                                     */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
+          <div>
+            <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+              <Smile className="h-5 w-5 text-indigo-500" />
+              Platform Satisfaction (QRDineX Ratings)
+            </h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Aggregated Diner feedback regarding QRDineX user experience across all partner restaurants.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Progress Bars */}
+          <div className="space-y-4 max-w-xl">
+            {feedbackStats.map((item) => {
+              const total = feedbackStats.reduce((sum, i) => sum + i.count, 0)
+              const percentage = total > 0 ? Math.round((item.count / total) * 100) : 0
+
+              const colors: Record<string, string> = {
+                BAD: 'bg-red-500',
+                GOOD: 'bg-orange-500',
+                BEST: 'bg-blue-500',
+                EXCELLENT: 'bg-green-500'
+              }
+              const textColors: Record<string, string> = {
+                BAD: 'text-red-500 dark:text-red-400',
+                GOOD: 'text-orange-500 dark:text-orange-400',
+                BEST: 'text-blue-500 dark:text-blue-400',
+                EXCELLENT: 'text-green-500 dark:text-green-400'
+              }
+              const emojis: Record<string, string> = {
+                BAD: '😞',
+                GOOD: '😊',
+                BEST: '⭐',
+                EXCELLENT: '👑'
+              }
+
+              return (
+                <div key={item.rating} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 font-semibold">
+                      <span className="text-base">{emojis[item.rating]}</span>
+                      <span className="text-foreground">{item.label}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-bold">
+                      <span className="text-muted-foreground">{item.count} votes</span>
+                      <span className={textColors[item.rating]}>({percentage}%)</span>
+                    </div>
+                  </div>
+                  <div className="h-3 w-full rounded-full bg-muted overflow-hidden">
+                    <div
+                      style={{ width: `${Math.max(1, percentage)}%` }}
+                      className={`h-full rounded-full ${colors[item.rating]}`}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Quick Summary Box */}
+          <div className="rounded-xl bg-muted/40 p-5 flex flex-col justify-center border border-border/50">
+            <h3 className="text-sm font-bold text-foreground mb-2">Overall Platform Health</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              This widget monitors diner experience across all active restaurants. High ratings indicate a stable checkout and menu flow, while sudden shifts in "Bad" ratings suggest frontend errors or server latency issues.
+            </p>
+            <div className="mt-4 text-xs font-bold text-muted-foreground">
+              Total Platform Responses: <span className="text-foreground text-sm font-black">{feedbackStats.reduce((sum, i) => sum + i.count, 0)}</span>
+            </div>
+          </div>
+        </div>
       </section>
     </div>
   )

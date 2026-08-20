@@ -18,6 +18,8 @@ import {
   CheckCircle2,
   XCircle,
   BarChart3,
+  MessageSquare,
+  Smile,
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/currency'
 
@@ -41,6 +43,7 @@ export function AnalyticsDashboardClient({
   initialTables,
   initialKitchen,
   initialSessions,
+  initialFeedback,
 }: AnalyticsDashboardClientProps) {
   const [range, setRange] = useState<'today' | 'yesterday' | '7days' | '30days' | 'custom'>('7days')
   const [startDate, setStartDate] = useState('')
@@ -54,6 +57,7 @@ export function AnalyticsDashboardClient({
   const [tables, setTables] = useState(initialTables)
   const [kitchen, setKitchen] = useState(initialKitchen)
   const [sessions, setSessions] = useState(initialSessions)
+  const [feedback, setFeedback] = useState(initialFeedback)
 
   const fetchAnalytics = useCallback(
     async (selectedRange: string, customStart?: string, customEnd?: string) => {
@@ -82,9 +86,10 @@ export function AnalyticsDashboardClient({
           fetch(`/api/owner/analytics/tables?${queryParams.toString()}`),
           fetch(`/api/owner/analytics/kitchen?${queryParams.toString()}`),
           fetch(`/api/owner/analytics/sessions?${queryParams.toString()}`),
+          fetch(`/api/owner/analytics/feedback?${queryParams.toString()}`),
         ])
 
-        const [dOverview, dRev, dOrd, dMenu, dTables, dKitchen, dSessions] = await Promise.all([
+        const [dOverview, dRev, dOrd, dMenu, dTables, dKitchen, dSessions, dFeedback] = await Promise.all([
           resOverview.json(),
           resRev.json(),
           resOrd.json(),
@@ -92,6 +97,7 @@ export function AnalyticsDashboardClient({
           resTables.json(),
           resKitchen.json(),
           resSessions.json(),
+          resFeedback.json(),
         ])
 
         if (dOverview.success) setOverview(dOverview.overview)
@@ -101,6 +107,7 @@ export function AnalyticsDashboardClient({
         if (dTables.success) setTables(dTables.tables)
         if (dKitchen.success) setKitchen(dKitchen.kitchen)
         if (dSessions.success) setSessions(dSessions.sessions)
+        if (dFeedback.success) setFeedback(dFeedback.feedback)
       } catch (err) {
         console.error('[Analytics] Fetch error:', err)
       } finally {
@@ -479,6 +486,26 @@ export function AnalyticsDashboardClient({
           )}
         </div>
       </div>
+
+      {/* 5. CUSTOMER SATISFACTION (FEEDBACK) */}
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-6">
+        <div className="border-b border-border pb-4">
+          <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+            <MessageSquare className="h-5 w-5 text-indigo-500" />
+            Customer Service Feedback
+          </h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Diner satisfaction ratings (Bad, Good, Best, Excellent) for this restaurant.
+          </p>
+        </div>
+        {feedback && feedback.length > 0 ? (
+          <FeedbackDistribution data={feedback} />
+        ) : (
+          <div className="flex h-32 items-center justify-center rounded-xl border border-dashed border-border text-xs text-muted-foreground">
+            No customer feedback recorded yet.
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -566,3 +593,65 @@ function SimpleBarChart({ data }: { data: { date: string; totalOrders: number }[
     </div>
   )
 }
+
+// ---------------------------------------------------------------------------
+// CUSTOMER FEEDBACK DISTRIBUTION
+// ---------------------------------------------------------------------------
+function FeedbackDistribution({ data }: { data: { rating: string; label: string; count: number }[] }) {
+  const total = data.reduce((sum, item) => sum + item.count, 0)
+
+  const colors: Record<string, string> = {
+    BAD: 'bg-red-550 dark:bg-red-500',
+    GOOD: 'bg-orange-500 dark:bg-orange-600',
+    BEST: 'bg-blue-500 dark:bg-blue-600',
+    EXCELLENT: 'bg-green-550 dark:bg-green-500'
+  }
+
+  const textColors: Record<string, string> = {
+    BAD: 'text-red-500 dark:text-red-400',
+    GOOD: 'text-orange-500 dark:text-orange-400',
+    BEST: 'text-blue-500 dark:text-blue-400',
+    EXCELLENT: 'text-green-500 dark:text-green-400'
+  }
+
+  const emojis: Record<string, string> = {
+    BAD: '😞',
+    GOOD: '😊',
+    BEST: '⭐',
+    EXCELLENT: '👑'
+  }
+
+  return (
+    <div className="space-y-4 max-w-xl">
+      {data.map((item) => {
+        const percentage = total > 0 ? Math.round((item.count / total) * 100) : 0
+        return (
+          <div key={item.rating} className="space-y-1.5">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2 font-semibold">
+                <span className="text-base">{emojis[item.rating]}</span>
+                <span className="text-foreground">{item.label}</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs font-bold">
+                <span className="text-muted-foreground">{item.count} votes</span>
+                <span className={textColors[item.rating]}>({percentage}%)</span>
+              </div>
+            </div>
+
+            <div className="h-3 w-full rounded-full bg-muted overflow-hidden">
+              <div
+                style={{ width: `${Math.max(1, percentage)}%` }}
+                className={`h-full rounded-full transition-all duration-500 ${colors[item.rating]}`}
+              />
+            </div>
+          </div>
+        )
+      })}
+
+      <div className="pt-2 text-right text-xs font-semibold text-muted-foreground border-t border-border/50">
+        Total Feedback Count: <span className="text-foreground font-bold">{total}</span>
+      </div>
+    </div>
+  )
+}
+

@@ -146,3 +146,34 @@ export async function getPendingRestaurants(): Promise<PendingRestaurant[]> {
 
   return restaurants
 }
+
+// ---------------------------------------------------------------------------
+// GLOBAL QRDINEX SERVICE FEEDBACK
+// ---------------------------------------------------------------------------
+export async function getQrdinexFeedbackStats() {
+  const feedbacks = await prisma.feedback.groupBy({
+    by: ['qrdinexRating'],
+    _count: {
+      id: true
+    }
+  })
+
+  const ratings: Record<string, number> = {
+    BAD: 0,
+    GOOD: 0,
+    BEST: 0,
+    EXCELLENT: 0
+  }
+
+  feedbacks.forEach((f) => {
+    ratings[f.qrdinexRating] = f._count.id
+  })
+
+  return [
+    { rating: 'BAD', label: 'Bad', count: ratings.BAD },
+    { rating: 'GOOD', label: 'Good', count: ratings.GOOD },
+    { rating: 'BEST', label: 'Best', count: ratings.BEST },
+    { rating: 'EXCELLENT', label: 'Excellent', count: ratings.EXCELLENT }
+  ]
+}
+

@@ -8,7 +8,7 @@ import {
   Sun, Moon, Check, X, Star, Calculator, HelpCircle, Menu,
   TrendingUp, Users, IndianRupee, Sparkles, ChevronDown, Zap,
   ChevronLeft, ChevronRight, Smartphone, ArrowUp,
-  Instagram, Facebook, Music2, Phone, Mail
+  Instagram, Phone, Mail
 } from 'lucide-react'
 
 
@@ -1213,8 +1213,6 @@ const nextFeature = () => {
             <div className="flex items-center gap-3 mt-1">
               {[
                 { href: 'https://www.instagram.com/qrdinex.official?igsi=MTdnc3dnYzljYzAxNQ==', Icon: Instagram, label: 'Instagram' },
-                { href: '#', Icon: Facebook,  label: 'Facebook'  },
-                { href: '#', Icon: Music2,    label: 'TikTok'    },
               ].map(({ href, Icon, label }) => (
                 <a
                   key={label}

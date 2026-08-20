@@ -10,12 +10,13 @@ import {
   getTableAnalytics,
   getKitchenAnalytics,
   getSessionAnalytics,
+  getFeedbackAnalytics,
 } from '@/services/owner/analytics.service'
 import { AnalyticsDashboardClient } from '@/components/owner/analytics/AnalyticsDashboardClient'
 
 export const metadata: Metadata = {
-  title: 'Analytics & Reports',
-  description: 'Business intelligence and operational analytics for restaurant owners.',
+  title: 'Analytics & Feedback',
+  description: 'Business intelligence, operational analytics, and customer reviews for restaurant owners.',
 }
 
 export default async function OwnerAnalyticsPage() {
@@ -35,6 +36,7 @@ export default async function OwnerAnalyticsPage() {
     tables,
     kitchen,
     sessions,
+    feedback,
   ] = await Promise.all([
     getBillingSettings(restaurantId),
     getOverviewAnalytics(restaurantId, { range: '7days' }),
@@ -44,16 +46,17 @@ export default async function OwnerAnalyticsPage() {
     getTableAnalytics(restaurantId, { range: '7days' }),
     getKitchenAnalytics(restaurantId, { range: '7days' }),
     getSessionAnalytics(restaurantId, { range: '7days' }),
+    getFeedbackAnalytics(restaurantId, { range: '7days' }),
   ])
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          Analytics & Business Intelligence
+          Analytics & Feedback
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Monitor your restaurant's revenue, order volume, menu performance, and kitchen velocity.
+          Monitor your restaurant's revenue, order volume, menu performance, and customer satisfaction ratings.
         </p>
       </div>
 
@@ -66,6 +69,7 @@ export default async function OwnerAnalyticsPage() {
         initialTables={tables}
         initialKitchen={kitchen}
         initialSessions={sessions}
+        initialFeedback={feedback}
       />
     </div>
   )

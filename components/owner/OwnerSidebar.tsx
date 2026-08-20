@@ -102,7 +102,7 @@ export function OwnerSidebar({ onClose }: OwnerSidebarProps) {
         { name: 'Orders', href: '/dashboard/orders', icon: ListOrdered },
         { name: 'Kitchen Display', href: '/dashboard/kitchen', icon: ChefHat },
         { name: 'Dining Sessions', href: '/dashboard/sessions', icon: Users },
-        { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
+        { name: 'Analytics & Feedback', href: '/dashboard/analytics', icon: BarChart3 },
       ]
     },
     {

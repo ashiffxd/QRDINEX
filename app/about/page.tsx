@@ -217,23 +217,16 @@ export default function AboutPage() {
         </div>
 
         {/* ── Person 2: quote LEFT, image RIGHT ─────────────────────── */}
-        <div className="relative min-h-screen flex items-center border-t border-slate-100 dark:border-slate-800/60 transition-colors duration-300 overflow-hidden">
-          {/* Background layer — mask only clips this div, not the content */}
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundColor: '#f9fafb',
-              backgroundImage: [
-                'linear-gradient(to right, #d1d5db 1px, transparent 1px)',
-                'linear-gradient(to bottom, #d1d5db 1px, transparent 1px)',
-              ].join(', '),
-              backgroundSize: '32px 32px',
-              WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 0% 0%, #000 50%, transparent 90%)',
-              maskImage: 'radial-gradient(ellipse 80% 80% at 0% 0%, #000 50%, transparent 90%)',
-            }}
-          />
-          {/* Content sits fully above the masked background */}
-          <div className="relative z-10 mx-auto max-w-5xl w-full px-6 md:px-10 py-20 flex flex-col md:items-end md:text-right text-left">
+        <div
+          className="min-h-screen flex items-center border-t border-slate-100 dark:border-slate-800/60 transition-colors duration-300"
+          style={{
+            backgroundColor: '#ffffff',
+            backgroundImage: 'radial-gradient(#bfdbfe 1px, transparent 1px)',
+            backgroundSize: '16px 16px',
+          }}
+        >
+          {/* Content sits fully above the background */}
+          <div className="mx-auto max-w-5xl w-full px-6 md:px-10 py-20 flex flex-col md:items-end md:text-right text-left">
 
             {/* Quote container */}
             <Reveal className="w-full max-w-3xl flex flex-col md:items-end" delay={150}>
@@ -241,9 +234,9 @@ export default function AboutPage() {
                 Lead Developer
               </span>
               
-              <h3 className="font-display text-3xl md:text-4xl font-bold text-slate-900 dark:text-white leading-tight">
-                Ashif Ansari
-              </h3>
+              <h3 className="font-display text-3xl md:text-4xl font-bold text-[#8B4513] dark:text-[#d27d46] leading-tight">
+  Ashif Ansari
+</h3>
               
               <div className="mt-6 relative w-full">
                 <span className="absolute -top-4 -left-3 text-7xl text-sky-400/30 dark:text-sky-500/20 font-serif leading-none select-none">"</span>

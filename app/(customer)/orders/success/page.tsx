@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import { CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
+import { FeedbackSection } from '@/components/customer/FeedbackSection'
 
 export const metadata: Metadata = {
   title: 'Order Success — QRDineX',
@@ -22,6 +23,10 @@ export default function OrderSuccessPage() {
       <p className="mx-auto mb-8 max-w-sm text-base text-muted-foreground">
         Your order has been successfully sent to the kitchen. It will be prepared shortly!
       </p>
+
+      <div className="mb-8 w-full flex justify-center">
+        <FeedbackSection />
+      </div>
 
       <div className="flex w-full max-w-sm flex-col gap-3">
         <Link
