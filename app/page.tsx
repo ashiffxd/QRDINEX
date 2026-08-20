@@ -5,9 +5,10 @@ import { useTheme } from 'next-themes'
 import {
   ArrowRight, Utensils, QrCode, LineChart, ShieldCheck,
   ChefHat, Boxes, Wifi, ScanLine, ClipboardList, Bell,
-  Sun, Moon, Check, X, Star, Calculator, HelpCircle,
-  TrendingUp, Users, IndianRupee, Sparkles, ChevronDown, Zap
-  , ChevronLeft, ChevronRight , Smartphone
+  Sun, Moon, Check, X, Star, Calculator, HelpCircle, Menu,
+  TrendingUp, Users, IndianRupee, Sparkles, ChevronDown, Zap,
+  ChevronLeft, ChevronRight, Smartphone, ArrowUp,
+  Instagram, Facebook, Music2, Phone, Mail
 } from 'lucide-react'
 
 
@@ -287,6 +288,7 @@ const faqs = [
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   
   // Interactive States
   const [openFaq, setOpenFaq] = useState<number | null>(0)
@@ -360,6 +362,15 @@ const nextFeature = () => {
     <a href="#pricing" className="hidden sm:block font-nav text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2.5 py-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10">Pricing</a>
     <a href="/about" className="hidden md:block font-nav text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2.5 py-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10">About</a>
 
+    {/* Mobile menu hamburger — visible only on small screens */}
+    <button
+      className="lg:hidden ml-1 flex items-center justify-center h-8 w-8 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-slate-700 dark:text-slate-200"
+      onClick={() => setMobileMenuOpen(true)}
+      aria-label="Open menu"
+    >
+      <Menu className="h-4 w-4" />
+    </button>
+
     {/* Theme Toggle */}
     <ThemeToggle />
 
@@ -380,6 +391,71 @@ const nextFeature = () => {
     </a>
   </nav>
 </header>
+
+      {/* ── Mobile Slide-in Sidebar ────────────────────────────────── */}
+      {/* Backdrop */}
+      <div
+        className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
+          mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setMobileMenuOpen(false)}
+      />
+      {/* Drawer */}
+      <aside
+        className={`fixed top-0 right-0 z-[70] h-full w-72 bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border-l border-white/20 dark:border-white/10 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out lg:hidden ${
+          mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        {/* Drawer header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 dark:border-white/5 bg-transparent">
+          <img src="/logo.png" alt="QRDineX" className="h-7 w-auto object-contain" />
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-slate-500 dark:text-slate-400"
+            aria-label="Close menu"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Nav links */}
+        <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
+          {[
+            { href: '#how-it-works', label: 'How it Works' },
+            { href: '#features',     label: 'Features' },
+            { href: '#calculator',   label: 'ROI Calculator' },
+            { href: '#pricing',      label: 'Pricing' },
+            { href: '/about',        label: 'About' },
+          ].map(({ href, label }) => (
+            <a
+              key={href}
+              href={href}
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-850 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+
+        {/* CTA buttons */}
+        <div className="px-4 pb-6 space-y-2 border-t border-white/10 dark:border-white/5 pt-4 bg-transparent">
+          <a
+            href="/login"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center justify-center w-full h-10 rounded-xl border border-slate-300/40 dark:border-white/10 text-sm font-semibold text-slate-800 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+          >
+            Login
+          </a>
+          <a
+            href="/signup"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center justify-center w-full h-10 rounded-xl bg-blue-700/90 dark:bg-blue-600/90 backdrop-blur text-sm font-semibold text-white shadow hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+          >
+            Sign Up Free
+          </a>
+        </div>
+      </aside>
 
       <main className="flex-1">
         {/* Hero Section */}
@@ -1119,13 +1195,139 @@ const nextFeature = () => {
         </section>
       </main>
 
-      <footer className="flex w-full flex-col items-center gap-2 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-6 sm:flex-row md:px-8 transition-colors duration-300">
-        <p className="text-xs text-slate-500 dark:text-slate-400">© {new Date().getFullYear()} QRDineX. All rights reserved.</p>
-        <nav className="flex gap-4 sm:ml-auto sm:gap-6">
-          <a href="#" className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Terms of Service</a>
-          <a href="#" className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Privacy</a>
-        </nav>
+      {/* ── Rich Footer ────────────────────────────────────────────── */}
+      <footer className="w-full bg-[#151b27] text-slate-300 transition-colors duration-300">
+        <div className="mx-auto max-w-6xl px-6 py-14">
+
+          {/* Top row – brand + social */}
+          <div className="flex flex-col gap-5 mb-10">
+            {/* Logo */}
+            <a href="#" className="flex items-center gap-2 w-fit" aria-label="QRDine home">
+              <img src="/logo.png" alt="QR Dine logo" className="h-12 w-auto object-contain" />
+            </a>
+            <p className="text-sm leading-relaxed text-slate-400 max-w-xs">
+              Smart ordering for the modern table.{' '}
+              <span className="text-slate-300">Transform your restaurant experience today.</span>
+            </p>
+            {/* Social icons */}
+            <div className="flex items-center gap-3 mt-1">
+              {[
+                { href: 'https://www.instagram.com/qrdinex.official?igsi=MTdnc3dnYzljYzAxNQ==', Icon: Instagram, label: 'Instagram' },
+                { href: '#', Icon: Facebook,  label: 'Facebook'  },
+                { href: '#', Icon: Music2,    label: 'TikTok'    },
+              ].map(({ href, Icon, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-700 bg-slate-800/60 text-slate-400 hover:border-blue-500 hover:text-blue-400 transition-all hover:scale-110"
+                >
+                  <Icon className="h-4 w-4" />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Link columns */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-10 mb-12">
+            {/* Product */}
+            <div>
+              <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">Product</h3>
+              <ul className="space-y-3">
+                {['About', 'Contact'].map(item => (
+                  <li key={item}>
+                    <a
+                      href={item === 'About' ? '/about' : '#contact'}
+                      className="text-sm text-slate-400 hover:text-white transition-colors"
+                    >
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Contact Us */}
+            <div>
+              <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">Contact Us</h3>
+              <ul className="space-y-3">
+                <li>
+                  <a href="tel:+91-6202933704" className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                    <Phone className="h-3.5 w-3.5 shrink-0" /> +91-6202933704
+                  </a>
+                </li>
+                <li>
+                  <a href="mailto:hello@qrdine.app" className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                    <Mail className="h-3.5 w-3.5 shrink-0" /> hello@qrdine.app
+                  </a>
+                </li>
+                <li>
+                  <a href="mailto:support@qrdine.app" className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                    <Mail className="h-3.5 w-3.5 shrink-0" /> support@qrdine.app
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">Legal</h3>
+              <ul className="space-y-3">
+                {[
+                  { label: 'Privacy Policy',    href: '#' },
+                  { label: 'Terms of Service',  href: '#' },
+                  { label: 'Cookie Policy',     href: '#' },
+                  { label: 'Refund Policy',     href: '#' },
+                ].map(({ label, href }) => (
+                  <li key={label}>
+                    <a href={href} className="text-sm text-slate-400 hover:text-white transition-colors">
+                      {label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Divider + copyright */}
+          <div className="border-t border-slate-800 pt-6">
+            <p className="text-center text-xs text-slate-500">
+              {new Date().getFullYear()} Qrdine. All rights reserved.
+            </p>
+          </div>
+        </div>
       </footer>
+
+      {/* ── Back-to-top floating button ──────────────────────────── */}
+      <BackToTopButton />
     </div>
+  )
+}
+
+// ── Back To Top ────────────────────────────────────────────────────────────
+function BackToTopButton() {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 400)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  return (
+    <button
+      id="back-to-top"
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      aria-label="Back to top"
+      className={[
+        'fixed bottom-6 right-6 z-50 flex h-11 w-11 items-center justify-center rounded-full',
+        'bg-blue-600 text-white shadow-lg shadow-blue-600/40',
+        'hover:bg-blue-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/50',
+        'active:scale-95 transition-all duration-300',
+        visible ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-4 pointer-events-none',
+      ].join(' ')}
+    >
+      <ArrowUp className="h-5 w-5" />
+    </button>
   )
 }
