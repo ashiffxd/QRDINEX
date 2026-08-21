@@ -181,7 +181,7 @@ export default function AboutPage() {
               <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-teal-500 to-emerald-400 blur-2xl opacity-20 scale-110" />
               <img
                 src="/team/founder.png"
-                alt="Ashan Shrestha"
+                alt="Sarfaraz Alam, Founder of QRDineX"
                 className="relative w-full h-full rounded-3xl object-cover shadow-2xl ring-1 ring-slate-200 dark:ring-slate-700"
                 onError={(e) => {
                   const t = e.currentTarget as HTMLImageElement
